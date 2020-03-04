@@ -1,5 +1,4 @@
   /*
-   * TU-DO Disco - Firmware for our custom TU-DO Makespace Cafe lights dimmer 
    * Copyright (C) 2020  Patrick Pedersen, The TU-DO Makespace
 
    * This program is free software: you can redistribute it and/or modify
@@ -14,6 +13,10 @@
 
    * You should have received a copy of the GNU General Public License
    * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+   * 
+   * Author: Patrick Pedersen <ctx.xda@gmail.com>
+   * Description: Main firmware routines for our custom TU-DO Makespace Cafe lights dimmer
+   * 
    */
 
  // TODO: 
