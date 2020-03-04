@@ -14,7 +14,7 @@
 
    * You should have received a copy of the GNU General Public License
    * along with this program.  If not, see <https://www.gnu.org/licenses/>.
-  */
+   */
 
  // TODO: 
  //  - RgbColor -> rgbm
@@ -361,11 +361,8 @@ void loop()
       rgbstrp.ClearTo(patches[current_patch].rgb);
       rgbstrp.Show();
       analogWrite(MAIN_STRIP, patches[current_patch].M);
-      
       avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
-
       programmed = true;
-
       patch_indicator.set(current_patch);
     }
 
