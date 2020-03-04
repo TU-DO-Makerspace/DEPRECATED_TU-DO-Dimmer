@@ -58,14 +58,6 @@
 
 // Buttons (Must share same Pin Bank!)
 
-/* For more information regarding the pin change
- * interrupt values, consult chapter 12 of the
- * Atmega328 datasheet, as well as the following
- * Arduino to AVR conversion diagrams:
- *  - https://www.arduino.cc/en/Hacking/PinMapping168
- *  - http://marcusjenkins.com/arduino-pinout-diagrams/
- * */
-
 #define PATCH_UP_BTN 13
 #define PATCH_DWN_BTN 12
 #define PATCH_SAVE_BTN 11
