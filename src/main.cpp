@@ -86,8 +86,8 @@
 
 // 7-Segment Patch Indicator
 
-#define BLINK_INTERVAL_ON 1000
-#define BLINK_INTERVAL_OFF 500
+#define BLINK_INTERVAL_ON 250
+#define BLINK_INTERVAL_OFF 250
 #define NUM_SAVE_BLINKS 3
 #define PATCH_DISPLAY_TIME 5000
 
