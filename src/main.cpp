@@ -81,8 +81,6 @@
 #define SEV_SEG_F 4
 #define SEV_SEG_G A0
 
-#define SEV_SEG_RES_ON_SEGS false
-
 ////////////////////////
 // Firmware parameters
 ////////////////////////
