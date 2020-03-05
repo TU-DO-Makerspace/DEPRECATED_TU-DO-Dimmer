@@ -29,6 +29,7 @@
 #include <math.h>
 
 #include <Arduino.h>
+#include <EEPROM.h>
 #include <NeoPixelBus.h>
 
 #include "PatchIndicator.h"
@@ -94,6 +95,8 @@
 ////////////////////////
 // Patches
 ////////////////////////
+
+#define EEPROM_PATCH_ADDR 0x0
 
 struct rgbm {
   RgbColor rgb;
@@ -289,6 +292,9 @@ void setup()
 
   rgbstrp.Begin();
 
+  // Load patches from EEPROM into ram
+  EEPROM.get(EEPROM_PATCH_ADDR, patches);
+
   // Load 0th patch on boot
   current_patch = 0;
   rgbstrp_color = patches[current_patch].rgb;
@@ -366,8 +372,8 @@ void loop()
   else if (patch_save_btn.released()) {
     patches[current_patch].rgb = rgbstrp_color;
     patches[current_patch].M = mainstrp_bright;
+    EEPROM.put(EEPROM_PATCH_ADDR + (sizeof(rgbm) * current_patch), patches[current_patch]);
     patch_indicator.blink(NUM_SAVE_BLINKS, BLINK_INTERVAL_ON, BLINK_INTERVAL_OFF);
-    // TODO EEPROM STUFF
   }
 
   if (patch_indicator.busy()) {
