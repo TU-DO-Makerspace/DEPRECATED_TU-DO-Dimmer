@@ -20,11 +20,7 @@
    */
 
  // TODO: 
- //  - RgbColor -> rgbm
  //  - Implement Control for main light via hex
- //  - Load EEPROM into patch array
- //  - Boot MSG
- //  - RGB Brightness controll
 
 #include <math.h>
 
@@ -81,7 +77,6 @@
 #define MAX_POT_MOV_DEV 6
 
 // 7-Segment Patch Indicator
-
 #define BLINK_INTERVAL_ON 250
 #define BLINK_INTERVAL_OFF 250
 #define NUM_SAVE_BLINKS 3
@@ -89,6 +84,28 @@
 
 // Patches
 #define EEPROM_PATCH_ADDR 0x0
+
+// Boot message
+#define BOOT_MSG_AUTHORS "Patrick Pedersen <ctx.xda@gmail.com>"
+#define BOOT_MSG_LICENSE "GPLv3"
+#define BOOT_MSG_SRC "https://github.com/TU-DO-Makerspace/TU-DO-Disco"
+#define BOOT_MSG_ASCII_ART \
+"Created by the:\n"\
+"\n"\
+" ______   __  __\n"\
+"/\\__  _\\ /\\ \\/\\ \\\n"\
+"\\/_/\\ \\/ \\ \\ \\_\\ \\\n"\
+"   \\ \\_\\  \\ \\_____\\\n"\
+"    \\/_/   \\/_____/\n"\
+"\n"\                    
+" _____     ______\n"\    
+"/\\  __-.  /\\  __ \\\n"\   
+"\\ \\ \\/\\ \\ \\ \\ \\/\\ \\\n"\  
+" \\ \\____-  \\ \\_____\\\n"\ 
+"  \\/____/   \\/_____/\n"\
+"\n"\
+"\n"\
+"Makerspace"             
 
 ////////////////////////
 // Structs
@@ -321,7 +338,11 @@ void setup()
   pinMode(MAIN_STRIP, OUTPUT);
 
   Serial.begin(9600);
-
+  Serial.println(String(BOOT_MSG_ASCII_ART) + "\n");
+  Serial.println("Author(s): " + String(BOOT_MSG_AUTHORS));
+  Serial.println("License: " + String(BOOT_MSG_LICENSE));
+  Serial.println("Build date: " + String(__DATE__));
+  Serial.println("Documentation: " + String(BOOT_MSG_SRC));
   rgbstrp.Begin();
 
   // Load patches from EEPROM into ram
