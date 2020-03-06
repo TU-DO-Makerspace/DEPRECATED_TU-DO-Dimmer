@@ -32,6 +32,7 @@
 #include <EEPROM.h>
 #include <NeoPixelBus.h>
 
+#include "RGBM.h"
 #include "PatchIndicator.h"
 #include "PushButton.h"
 
@@ -50,7 +51,9 @@
 #define M_POT A2 // Main light
 
 // Rotary encoder
-#define BRIGHT_ENC A1
+// #define BRIGHT_ENC_CLK 
+// #define BRIGHT_ENC_DT
+// #define BRIGHT_ENC_SW
 
 // LED Strips
 #define MAIN_STRIP 3
@@ -98,20 +101,14 @@
 
 #define EEPROM_PATCH_ADDR 0x0
 
-struct rgbm {
-  RgbColor rgb;
-  uint8_t M;
-};
-
-rgbm patches[10];
+RGBM patches[10];
 uint8_t current_patch;
 
 ////////////////////////
 // Functions
 ////////////////////////
 
-inline uint32_t uint32_pow(uint8_t base, uint8_t pow)
-{
+inline uint32_t uint32_pow(uint8_t base, uint8_t pow) {
   uint32_t ret = 1;
   for (uint8_t i = 0; i < pow; i++) {
     ret *= base;
@@ -130,8 +127,7 @@ inline uint8_t adc_to_rgb(uint16_t val) {
   return val >> 2;
 }
 
-inline uint8_t avg_pot_read(uint8_t pin, uint16_t samples)
-{
+inline uint8_t avg_pot_read(uint8_t pin, uint16_t samples) {
   uint64_t avg = 0;
 
   for (uint16_t i = 0; i < samples; i++) {
@@ -141,18 +137,18 @@ inline uint8_t avg_pot_read(uint8_t pin, uint16_t samples)
   return adc_to_rgb(round(avg/samples));
 }
 
-inline rgbm avg_rgbm_pot_read(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t pot_m, uint16_t samples)
-{
-  rgbm ret;
-  ret.rgb.R = avg_pot_read(pot_r, samples);
-  ret.rgb.G = avg_pot_read(pot_g, samples);
-  ret.rgb.B = avg_pot_read(pot_b, samples);
-  ret.M = avg_pot_read(pot_m, samples);
+inline RGBM avg_rgbm_pot_read(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t pot_m, uint16_t samples) {
+  RGBM ret;
+  ret.set_rgbm (
+    avg_pot_read(pot_r, samples),
+    avg_pot_read(pot_g, samples),
+    avg_pot_read(pot_b, samples),
+    avg_pot_read(pot_m, samples)
+  );
   return ret;
 }
 
-inline bool parse_hex(uint32_t *_hex, String cmdbuf)
-{
+inline bool parse_hex(uint32_t *_hex, String cmdbuf) {
   if (cmdbuf.length() != 7 || cmdbuf[0] != '#') {
     return false;
   }
@@ -186,10 +182,9 @@ inline bool parse_hex(uint32_t *_hex, String cmdbuf)
 uint8_t mainstrp_bright;
 
 NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod> rgbstrp(RGB_STRIP_LEDS , RGB_STRIP);
-RgbColor rgbstrp_color;
-
-rgbm rgbmpots;
-rgbm avg;
+PreciseRGBM rgbm;
+RGBM rgbmpots;
+RGBM avg;
 
 // Serial commandline buffer
 String cmdbuf = "";
@@ -219,10 +214,6 @@ PushButton patch_save_btn(PATCH_SAVE_BTN, PULLUP);
 bool programmed = false;
 
 ///////////////////////
-// Button Interrupts
-///////////////////////
-
-///////////////////////
 // Color via serial
 ///////////////////////
 
@@ -231,18 +222,11 @@ void serialEvent() {
     char c = (char)Serial.read();
 
     if (c == 'g') {
-      String rgb_hex[3] { String(rgbstrp_color.R, HEX), String(rgbstrp_color.G, HEX), String(rgbstrp_color.B, HEX) };
-      
-      for (uint8_t i = 0; i < 3; i++) {
-        if (rgb_hex[i].length() == 1) {
-          rgb_hex[i] = "0" + rgb_hex[i];
-        }
-      }
-
-      Serial.println("Current Color: #" + rgb_hex[0] + rgb_hex[1] + rgb_hex[2]);
-      Serial.println("R: " + String(rgbstrp_color.R));
-      Serial.println("G: " + String(rgbstrp_color.G));
-      Serial.println("B: " + String(rgbstrp_color.B));
+      Serial.println("Current Color: " + rgbm.hexcode());
+      Serial.println("R: " + String(rgbm.r()));
+      Serial.println("G: " + String(rgbm.g()));
+      Serial.println("B: " + String(rgbm.b()));
+      Serial.println("M: " + String(rgbm.m()));
       cmdbuf = "";
     }
     else if (c == '#') {
@@ -251,13 +235,11 @@ void serialEvent() {
     else if (cmdbuf.length() > 6) {
       uint32_t hex;
       if (parse_hex(&hex, cmdbuf)) {
-        rgbstrp_color = HtmlColor(hex);
-        rgbstrp.ClearTo(rgbstrp_color);
+        rgbm.set_rgb(HtmlColor(hex));
+        rgbstrp.ClearTo(rgbm.rgb());
         rgbstrp.Show();
-
-        // Read average of pots for potentiometer movement detection 
         avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
-        programmed = true;        
+        programmed = true;
       }
       else {
         Serial.println("Invalid hex value!");
@@ -280,11 +262,6 @@ void setup()
   pinMode(R_POT, INPUT);
   pinMode(G_POT, INPUT);
   pinMode(B_POT, INPUT);
-  pinMode(BRIGHT_ENC, INPUT);
-
-  pinMode(PATCH_UP_BTN, INPUT_PULLUP);
-  pinMode(PATCH_DWN_BTN, INPUT_PULLUP);
-  pinMode(PATCH_SAVE_BTN, INPUT_PULLUP);
 
   pinMode(MAIN_STRIP, OUTPUT);
 
@@ -297,19 +274,30 @@ void setup()
 
   // Load 0th patch on boot
   current_patch = 0;
-  rgbstrp_color = patches[current_patch].rgb;
-  mainstrp_bright = patches[current_patch].M;
+  rgbm = patches[current_patch];
   
-  rgbstrp.ClearTo(rgbstrp_color);
+  rgbstrp.ClearTo(rgbm.rgb());
   rgbstrp.Show();
-  analogWrite(MAIN_STRIP, mainstrp_bright);
+  analogWrite(MAIN_STRIP, rgbm.m());
 
   // 7-Segment Initialization
   patch_indicator.set(0);
   patch_indicator.show(PATCH_DISPLAY_TIME);
 
-  avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
+  avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, MAIN_STRIP);
+  
   programmed = true;
+
+  // DEBUG
+  // while(true) {
+  //   rgbm.set_rgb(RgbColor(0, 128, 30));
+  //   for (uint8_t i = 0; i < 255; i++) {
+  //     increase_rgb_brightness(rgbstrp_color);
+  //     rgbstrp.ClearTo(rgbstrp_color);
+  //     rgbstrp.Show();
+  //     delay(10);
+  //   }
+  // }
 }
 
 ///////////////////////
@@ -323,21 +311,22 @@ void setup()
 
 void loop()
 {
-  rgbmpots.rgb.R = adc_to_rgb(analogRead(R_POT));
-  rgbmpots.rgb.G = adc_to_rgb(analogRead(G_POT));
-  rgbmpots.rgb.B = adc_to_rgb(analogRead(B_POT));
-  rgbmpots.M = adc_to_rgb(analogRead(M_POT));
+  rgbmpots.set_rgbm (
+    adc_to_rgb(analogRead(R_POT)),
+    adc_to_rgb(analogRead(G_POT)),
+    adc_to_rgb(analogRead(B_POT)),
+    adc_to_rgb(analogRead(M_POT))
+  );
 
   if (!programmed || 
-      abs(rgbmpots.rgb.R - avg.rgb.R) > MAX_POT_MOV_DEV ||
-      abs(rgbmpots.rgb.G - avg.rgb.G) > MAX_POT_MOV_DEV ||
-      abs(rgbmpots.rgb.B - avg.rgb.B) > MAX_POT_MOV_DEV ||
-      abs(rgbmpots.M - avg.M) > MAX_POT_MOV_DEV) {
-    rgbstrp_color = rgbmpots.rgb;
-    mainstrp_bright = rgbmpots.M;
-    rgbstrp.ClearTo(rgbstrp_color);
+      abs(rgbmpots.r() - avg.r()) > MAX_POT_MOV_DEV ||
+      abs(rgbmpots.g() - avg.g()) > MAX_POT_MOV_DEV ||
+      abs(rgbmpots.b() - avg.b()) > MAX_POT_MOV_DEV ||
+      abs(rgbmpots.m() - avg.m()) > MAX_POT_MOV_DEV) {
+    rgbm = rgbmpots;
+    rgbstrp.ClearTo(rgbm.rgb());
     rgbstrp.Show();
-    analogWrite(MAIN_STRIP, mainstrp_bright);
+    analogWrite(MAIN_STRIP, rgbm.m());
     programmed = false;
   }
 
@@ -359,9 +348,9 @@ void loop()
     }
     
     if (!invalid) {
-      rgbstrp.ClearTo(patches[current_patch].rgb);
+      rgbstrp.ClearTo(patches[current_patch].rgb());
       rgbstrp.Show();
-      analogWrite(MAIN_STRIP, patches[current_patch].M);
+      analogWrite(MAIN_STRIP, patches[current_patch].m());
       avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
       programmed = true;
       patch_indicator.set(current_patch);
@@ -370,9 +359,8 @@ void loop()
     patch_indicator.show(PATCH_DISPLAY_TIME);
   }
   else if (patch_save_btn.released()) {
-    patches[current_patch].rgb = rgbstrp_color;
-    patches[current_patch].M = mainstrp_bright;
-    EEPROM.put(EEPROM_PATCH_ADDR + (sizeof(rgbm) * current_patch), patches[current_patch]);
+    patches[current_patch] = rgbm;
+    EEPROM.put(EEPROM_PATCH_ADDR + (sizeof(RGBM) * current_patch), patches[current_patch]);
     patch_indicator.blink(NUM_SAVE_BLINKS, BLINK_INTERVAL_ON, BLINK_INTERVAL_OFF);
   }
 
