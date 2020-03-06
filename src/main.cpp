@@ -32,8 +32,9 @@
 #include <EEPROM.h>
 #include <NeoPixelBus.h>
 
+#include <KY040rotary.h>
+
 #include "PatchIndicator.h"
-#include "PushButton.h"
 
 #ifndef __AVR__
 #error Sorry, only AVR boards are currently supported
@@ -50,20 +51,14 @@
 #define M_POT A2 // Main light
 
 // Rotary encoder
-#define BRIGHT_ENC A1
+#define BRIGHT_ENC_CLK 13
+#define BRIGHT_ENC_DT 12
+#define BRIGHT_ENC_SW 11
 
 // LED Strips
 #define MAIN_STRIP 3
 #define RGB_STRIP 2
 #define RGB_STRIP_LEDS 8
-
-// Buttons (Must share same Pin Bank!)
-
-#define PATCH_UP_BTN 13
-#define PATCH_DWN_BTN 12
-#define PATCH_SAVE_BTN 11
-
-#define PULLUP true
 
 // 7-Segment Patch Indicator
 
@@ -92,19 +87,17 @@
 #define NUM_SAVE_BLINKS 3
 #define PATCH_DISPLAY_TIME 5000
 
-////////////////////////
 // Patches
-////////////////////////
-
 #define EEPROM_PATCH_ADDR 0x0
+
+////////////////////////
+// Structs
+////////////////////////
 
 struct rgbm {
   RgbColor rgb;
   uint8_t M;
 };
-
-rgbm patches[10];
-uint8_t current_patch;
 
 ////////////////////////
 // Functions
@@ -191,6 +184,9 @@ RgbColor rgbstrp_color;
 rgbm rgbmpots;
 rgbm avg;
 
+rgbm patches[10];
+uint8_t current_patch;
+
 // Serial commandline buffer
 String cmdbuf = "";
 
@@ -207,20 +203,14 @@ PatchIndicator patch_indicator (
   SEV_SEG_G
 );
 
-// Buttons
-PushButton patch_up_btn(PATCH_UP_BTN, PULLUP);
-PushButton patch_dwn_btn(PATCH_DWN_BTN, PULLUP);
-PushButton patch_save_btn(PATCH_SAVE_BTN, PULLUP);
+// Rotary Encoder
+KY040 bright_enc(BRIGHT_ENC_CLK, BRIGHT_ENC_DT, BRIGHT_ENC_SW);
 
 // External color programming
 
 // When set to true, the device will maintain its current color
 // until potentiometer movement is detected
 bool programmed = false;
-
-///////////////////////
-// Button Interrupts
-///////////////////////
 
 ///////////////////////
 // Color via serial
@@ -270,6 +260,53 @@ void serialEvent() {
   }
 }
 
+//////////////////////////////
+// Rotary Encoder Interrupts
+//////////////////////////////
+
+void change_patch(bool up) {
+  bool invalid = false;
+
+  if (up && current_patch < 9) {
+    current_patch++;
+  }
+  else if (!up && current_patch > 0) {
+    current_patch--;
+  }
+  else {
+    invalid = true;
+  }
+  
+  if (!invalid) {
+    rgbstrp_color = patches[current_patch].rgb;
+    rgbstrp.ClearTo(rgbstrp_color);
+    rgbstrp.Show();
+    mainstrp_bright = patches[current_patch].M;
+    analogWrite(MAIN_STRIP, mainstrp_bright);
+    avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
+    programmed = true;
+    patch_indicator.set(current_patch);
+  }
+
+  patch_indicator.show(PATCH_DISPLAY_TIME);
+}
+
+void patch_up() {
+  change_patch(true);
+}
+
+void patch_dwn() {
+  change_patch(false);
+}
+
+void save_patch() {
+  patches[current_patch].rgb = rgbstrp_color;
+  patches[current_patch].M = mainstrp_bright;
+  EEPROM.put(EEPROM_PATCH_ADDR + (sizeof(rgbm) * current_patch), patches[current_patch]);
+  patch_indicator.blink(NUM_SAVE_BLINKS, BLINK_INTERVAL_ON, BLINK_INTERVAL_OFF);
+}
+
+
 //////////////////////////
 // Initialization
 //////////////////////////
@@ -280,7 +317,6 @@ void setup()
   pinMode(R_POT, INPUT);
   pinMode(G_POT, INPUT);
   pinMode(B_POT, INPUT);
-  pinMode(BRIGHT_ENC, INPUT);
 
   pinMode(MAIN_STRIP, OUTPUT);
 
@@ -306,6 +342,12 @@ void setup()
 
   avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
   programmed = true;
+
+  // Rotary Encoder Initialization
+  bright_enc.Begin();
+  bright_enc.OnButtonRight(patch_up);
+  bright_enc.OnButtonLeft(patch_dwn);
+  bright_enc.OnButtonClicked(save_patch);
 }
 
 ///////////////////////
@@ -337,40 +379,7 @@ void loop()
     programmed = false;
   }
 
-  bool patch_up_released = patch_up_btn.released();
-  bool patch_dwn_released = patch_dwn_btn.released();
-
-  if (patch_up_released || patch_dwn_released) {
-    
-    bool invalid = false;
-
-    if (patch_up_released && current_patch < 9) {
-      current_patch++;
-    }
-    else if (patch_dwn_released && current_patch > 0) {
-      current_patch--;
-    }
-    else {
-      invalid = true;
-    }
-    
-    if (!invalid) {
-      rgbstrp.ClearTo(patches[current_patch].rgb);
-      rgbstrp.Show();
-      analogWrite(MAIN_STRIP, patches[current_patch].M);
-      avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
-      programmed = true;
-      patch_indicator.set(current_patch);
-    }
-
-    patch_indicator.show(PATCH_DISPLAY_TIME);
-  }
-  else if (patch_save_btn.released()) {
-    patches[current_patch].rgb = rgbstrp_color;
-    patches[current_patch].M = mainstrp_bright;
-    EEPROM.put(EEPROM_PATCH_ADDR + (sizeof(rgbm) * current_patch), patches[current_patch]);
-    patch_indicator.blink(NUM_SAVE_BLINKS, BLINK_INTERVAL_ON, BLINK_INTERVAL_OFF);
-  }
+  bright_enc.Process(millis());
 
   if (patch_indicator.busy()) {
     patch_indicator.update();
