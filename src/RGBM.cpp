@@ -155,6 +155,10 @@ void PreciseRGBM::set_rgbm(uint8_t r, uint8_t g, uint8_t b, uint8_t m) {
 }
 
 void PreciseRGBM::inc_rgb_bright(double percentage) {
+    if (_rgb.R >= 255 && _rgb.G >= 255 && _rgb.B >= 255) {
+        return;
+    }
+
     if (_r_double == UNINITIALIZED_DOUBLE || 
         _g_double == UNINITIALIZED_DOUBLE ||
         _b_double == UNINITIALIZED_DOUBLE ||
@@ -167,6 +171,10 @@ void PreciseRGBM::inc_rgb_bright(double percentage) {
 }
 
 void PreciseRGBM::dec_rgb_bright(double percentage) {
+    if (_rgb.R < 1 && _rgb.G < 1 && _rgb.B < 1) {
+        return;
+    }
+
     if (_r_double == UNINITIALIZED_DOUBLE || 
         _g_double == UNINITIALIZED_DOUBLE ||
         _b_double == UNINITIALIZED_DOUBLE ||
