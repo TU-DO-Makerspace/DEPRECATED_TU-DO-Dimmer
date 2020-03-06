@@ -95,6 +95,9 @@
 #define NUM_SAVE_BLINKS 3
 #define PATCH_DISPLAY_TIME 5000
 
+// Brightness shifter
+#define BRIGHTNESS_CHNG_PER_STEP 1
+
 ////////////////////////
 // Patches
 ////////////////////////

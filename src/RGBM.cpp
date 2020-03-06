@@ -154,26 +154,26 @@ void PreciseRGBM::set_rgbm(uint8_t r, uint8_t g, uint8_t b, uint8_t m) {
     _m_double = _m = m;
 }
 
-void PreciseRGBM::inc_rgb_bright() {
+void PreciseRGBM::inc_rgb_bright(double percentage) {
     if (_r_double == UNINITIALIZED_DOUBLE || 
         _g_double == UNINITIALIZED_DOUBLE ||
         _b_double == UNINITIALIZED_DOUBLE ||
         _m_double == UNINITIALIZED_DOUBLE) {
             set_rgbm(_rgb, _m);
     }
-    _rgb.R = (_r_double *= double(1) + double(1/255));
-    _rgb.G = (_g_double *= double(1) + double(1/255));
-    _rgb.B = (_b_double *= double(1) + double(1/255));    
+    _rgb.R = (_r_double *= double(1) + (percentage * 0.01));
+    _rgb.G = (_g_double *= double(1) + (percentage * 0.01));
+    _rgb.B = (_b_double *= double(1) + (percentage * 0.01));    
 }
 
-void PreciseRGBM::dec_rgb_bright() {
+void PreciseRGBM::dec_rgb_bright(double percentage) {
     if (_r_double == UNINITIALIZED_DOUBLE || 
         _g_double == UNINITIALIZED_DOUBLE ||
         _b_double == UNINITIALIZED_DOUBLE ||
         _m_double == UNINITIALIZED_DOUBLE) {
             set_rgbm(_rgb, _m);
     }
-    _rgb.R = (_r_double *= double(1) - double(1/255));
-    _rgb.G = (_g_double *= double(1) - double(1/255));
-    _rgb.B = (_b_double *= double(1) - double(1/255));    
+    _rgb.R = (_r_double *= double(1) - (percentage * 0.01));
+    _rgb.G = (_g_double *= double(1) - (percentage * 0.01));
+    _rgb.B = (_b_double *= double(1) - (percentage * 0.01));    
 }

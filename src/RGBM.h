@@ -70,6 +70,6 @@ class PreciseRGBM : public RGBM {
         virtual void set_rgbm(RgbColor rgb, uint8_t m);      
         virtual void set_rgbm(uint8_t r, uint8_t g, uint8_t b, uint8_t m);
 
-        void inc_rgb_bright();
-        void dec_rgb_bright();
+        void inc_rgb_bright(double percentage);
+        void dec_rgb_bright(double percentage);
 };
