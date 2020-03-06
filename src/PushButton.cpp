@@ -22,7 +22,8 @@
     #include <Arduino.h>
     #include "PushButton.h"
 
-    PushButton::PushButton(uint8_t pin, bool pullup) : _pin(pin) , _pullup(pullup) {   
+    PushButton::PushButton(uint8_t pin, bool pullup) : _pin(pin) , _pullup(pullup) {
+        pinMode(pin, (pullup) ? INPUT_PULLUP : INPUT);
         _prev_state = state();
     }
 
