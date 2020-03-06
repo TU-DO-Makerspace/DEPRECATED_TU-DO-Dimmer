@@ -282,10 +282,6 @@ void setup()
   pinMode(B_POT, INPUT);
   pinMode(BRIGHT_ENC, INPUT);
 
-  pinMode(PATCH_UP_BTN, INPUT_PULLUP);
-  pinMode(PATCH_DWN_BTN, INPUT_PULLUP);
-  pinMode(PATCH_SAVE_BTN, INPUT_PULLUP);
-
   pinMode(MAIN_STRIP, OUTPUT);
 
   Serial.begin(9600);
