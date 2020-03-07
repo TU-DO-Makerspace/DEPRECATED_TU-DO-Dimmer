@@ -90,6 +90,16 @@ inline rgbm avg_rgbm_pot_read(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8
         return ret;
 }
 
+inline bool rgbm_pot_mov_det(rgbm rgbmpots, rgbm avg, uint8_t max_dev)
+{
+        return (
+                abs(rgbmpots.rgb.R - avg.rgb.R) > max_dev ||
+                abs(rgbmpots.rgb.G - avg.rgb.G) > max_dev ||
+                abs(rgbmpots.rgb.B - avg.rgb.B) > max_dev ||
+                abs(rgbmpots.M - avg.M) > max_dev
+        );
+}
+
 inline bool parse_hex(uint32_t *_hex, String cmdbuf)
 {
         if (cmdbuf.length() != 7 || cmdbuf[0] != '#')
@@ -311,12 +321,7 @@ void loop()
         rgbmpots.rgb.B = adc_to_rgb(analogRead(B_POT));
         rgbmpots.M = adc_to_rgb(analogRead(M_POT));
 
-        if (!programmed || 
-            abs(rgbmpots.rgb.R - avg.rgb.R) > MAX_POT_MOV_DEV ||
-            abs(rgbmpots.rgb.G - avg.rgb.G) > MAX_POT_MOV_DEV ||
-            abs(rgbmpots.rgb.B - avg.rgb.B) > MAX_POT_MOV_DEV ||
-            abs(rgbmpots.M - avg.M) > MAX_POT_MOV_DEV)
-        {
+        if (!programmed || rgbm_pot_mov_det(rgbmpots, avg, MAX_POT_MOV_DEV)) {
                 rgbstrp_color = rgbmpots.rgb;
                 mainstrp_bright = rgbmpots.M;
                 rgbstrp.ClearTo(rgbstrp_color);
