@@ -19,9 +19,6 @@
    * 
    */
 
- // TODO: 
- //  - Implement Control for main light via hex
-
 #include <math.h>
 
 #include <Arduino.h>
@@ -112,20 +109,17 @@ inline bool rgbm_pot_mov_det(rgbm rgbmpots, rgbm avg, uint8_t max_dev)
         );
 }
 
-inline bool parse_hex(uint32_t *_hex, String cmdbuf)
+inline bool hexstr_to_uint32(uint32_t *_hex, String hexstr)
 {
-        if (cmdbuf.length() != 7 || cmdbuf[0] != '#')
-        return false;
-
         uint32_t hex = 0;
 
-        for (size_t i = 1; i < cmdbuf.length(); i++) {
-                if (cmdbuf[i] >= '0' && cmdbuf[i] <= '9')
-                        hex += (cmdbuf[i] - 0x30) * uint32_pow(16, (cmdbuf.length() - 1 - i));
-                else if (cmdbuf[i] >= 'A' && cmdbuf[i] <= 'F')
-                        hex += (cmdbuf[i] - 55) * uint32_pow(16, (cmdbuf.length() - 1 - i));
-                else if (cmdbuf[i] >= 'a' && cmdbuf[i] <= 'f')
-                        hex += (cmdbuf[i] - 78) * uint32_pow(16, (cmdbuf.length() - 1 - i));
+        for (size_t i = 0; i < hexstr.length(); i++) {
+                if (hexstr[i] >= '0' && hexstr[i] <= '9')
+                        hex += (hexstr[i] - 0x30) * uint32_pow(16, (hexstr.length() - i));
+                else if (hexstr[i] >= 'A' && hexstr[i] <= 'F')
+                        hex += (hexstr[i] - 55) * uint32_pow(16, (hexstr.length() - i));
+                else if (hexstr[i] >= 'a' && hexstr[i] <= 'f')
+                        hex += (hexstr[i] - 78) * uint32_pow(16, (hexstr.length() - i));
                 else
                         return false;
         }
@@ -199,21 +193,44 @@ void serialEvent()
                         cmdbuf = "";
                 } else if (c == '#') {
                         cmdbuf = "#";
-                } else if (cmdbuf.length() > 6) {
-                        uint32_t hex;
+                } else if (cmdbuf.length() == 7 || cmdbuf.length() == 9) {
+                        uint32_t rgb_hex;
+                        uint32_t m_hex;
+
+                        String rgb;
+                        String m;
                         
-                        if (parse_hex(&hex, cmdbuf)) {
-                                rgbstrp_color = HtmlColor(hex);
-                                rgbstrp.ClearTo(rgbstrp_color);
-                                rgbstrp.Show();
+                        if (cmdbuf[0] != '#')
+                                goto INVALID_HEX;
 
-                                // Read average of pots for potentiometer movement detection 
-                                avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
-                                programmed = true;        
-                        } else {
-                                Serial.println("Invalid hex value!");
+                        rgb = cmdbuf.substring(1, 7);
+
+                        if (!hexstr_to_uint32(&rgb_hex, rgb))
+                                goto INVALID_HEX;
+
+                        if (cmdbuf.length() == 9) {
+                                m = cmdbuf.substring(7, 9);
+                                
+                                if (!hexstr_to_uint32(&m_hex, m))
+                                        goto INVALID_HEX;
+                                
+                                mainstrp_bright = m_hex;
+                                analogWrite(m_hex, MAIN_STRIP);
                         }
+                        
+                        rgbstrp_color = HtmlColor(rgb_hex);
+                        rgbstrp.ClearTo(rgbstrp_color);
+                        rgbstrp.Show();
 
+                        // Read average of pots for potentiometer movement detection 
+                        avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
+                        programmed = true;
+
+                        cmdbuf = "";
+                        return;
+
+                        INVALID_HEX:
+                        Serial.println("Invalid hex value!");
                         cmdbuf = "";
                 } else {
                         cmdbuf += c;
