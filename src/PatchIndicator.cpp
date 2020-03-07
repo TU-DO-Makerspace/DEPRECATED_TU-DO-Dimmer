@@ -100,14 +100,13 @@ void PatchIndicator::update() {
         {
                 toggle();
 
-                if (_state == false)
-                {
+                if (_state == false) {
                         _blink_tstamp = millis() + _blink_interval_off;
                         _blinks--;
                 } else {
                         _blink_tstamp = millis() + _blink_interval_on;
                 }
 
-                busy = (_blinks > 0);
+                _busy = (_blinks > 0);
         }
 }
