@@ -37,18 +37,18 @@
 #error Sorry, only AVR boards are currently supported
 #endif
 
-////////////////////////
+//////////////////////////////
 // Structs
-////////////////////////
+//////////////////////////////
 
 struct rgbm {
         RgbColor rgb;
         uint8_t M;
 };
 
-////////////////////////
+//////////////////////////////
 // Functions
-////////////////////////
+//////////////////////////////
 
 inline uint32_t uint32_pow(uint8_t base, uint8_t pow)
 {
@@ -78,6 +78,18 @@ inline uint8_t avg_pot_read(uint8_t pin, uint16_t samples)
                 avg += analogRead(pin);
 
         return adc_to_rgb(round(avg/samples));
+}
+
+inline rgbm read_rgbm_pots(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t pot_m)
+{
+        rgbm ret;
+        
+        ret.rgb.R = adc_to_rgb(analogRead(R_POT));
+        ret.rgb.G = adc_to_rgb(analogRead(G_POT));
+        ret.rgb.B = adc_to_rgb(analogRead(B_POT));
+        ret.M = adc_to_rgb(analogRead(M_POT));
+        
+        return ret;
 }
 
 inline rgbm avg_rgbm_pot_read(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t pot_m, uint16_t samples)
@@ -122,9 +134,9 @@ inline bool parse_hex(uint32_t *_hex, String cmdbuf)
         return true;
 }
 
-//////////////////////////
+//////////////////////////////
 // Global vars & Objects
-//////////////////////////
+//////////////////////////////
 
 // LED Strips
 uint8_t mainstrp_bright;
@@ -258,9 +270,9 @@ void save_patch()
 }
 
 
-//////////////////////////
+//////////////////////////////
 // Initialization
-//////////////////////////
+//////////////////////////////
 
 void setup()
 {
@@ -305,9 +317,9 @@ void setup()
         bright_enc.OnButtonClicked(save_patch);
 }
 
-///////////////////////
+//////////////////////////////
 // Main loop
-///////////////////////
+//////////////////////////////
 
 // Avoid implementing time intensive
 // instructions/operations, as delays
@@ -316,10 +328,7 @@ void setup()
 
 void loop()
 {
-        rgbmpots.rgb.R = adc_to_rgb(analogRead(R_POT));
-        rgbmpots.rgb.G = adc_to_rgb(analogRead(G_POT));
-        rgbmpots.rgb.B = adc_to_rgb(analogRead(B_POT));
-        rgbmpots.M = adc_to_rgb(analogRead(M_POT));
+        rgbmpots = read_rgbm_pots(R_POT, G_POT, B_POT, M_POT);
 
         if (!programmed || rgbm_pot_mov_det(rgbmpots, avg, MAX_POT_MOV_DEV)) {
                 rgbstrp_color = rgbmpots.rgb;
