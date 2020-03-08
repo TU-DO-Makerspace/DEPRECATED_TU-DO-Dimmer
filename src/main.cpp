@@ -211,11 +211,11 @@ inline bool hexstr_to_uint32(uint32_t *_hex, String hexstr)
 
         for (size_t i = 0; i < hexstr.length(); i++) {
                 if (hexstr[i] >= '0' && hexstr[i] <= '9')
-                        hex += (hexstr[i] - 0x30) * uint32_pow(16, (hexstr.length() - i));
+                        hex += (hexstr[i] - 0x30) * uint32_pow(16, (hexstr.length() - 1 - i));
                 else if (hexstr[i] >= 'A' && hexstr[i] <= 'F')
-                        hex += (hexstr[i] - 55) * uint32_pow(16, (hexstr.length() - i));
+                        hex += (hexstr[i] - 55) * uint32_pow(16, (hexstr.length() - 1 - i));
                 else if (hexstr[i] >= 'a' && hexstr[i] <= 'f')
-                        hex += (hexstr[i] - 78) * uint32_pow(16, (hexstr.length() - i));
+                        hex += (hexstr[i] - 87) * uint32_pow(16, (hexstr.length() - 1 - i));
                 else
                         return false;
         }
@@ -278,6 +278,8 @@ bool programmed = false;
  *      - When a RGBM (RGBA) html value is received (ex. #AABBCCDD), the RGB strip and main light are programmed to that value.
  *        The main light strip brightness is controlled by the last two hex numbers.
  */
+
+bool rgb_html_passed = false;
 void serialEvent()
 {
         while(Serial.available()) {
@@ -305,7 +307,7 @@ void serialEvent()
                         rgbstrp.ClearTo(prev_color);
                         rgbstrp.Show();
                         cmdbuf = "";
-                } else if (cmdbuf.length() == 7 || cmdbuf.length() == 9) {
+                } else if (c == '\n') {
                         uint32_t rgb_hex;
                         uint32_t m_hex;
 
@@ -319,7 +321,7 @@ void serialEvent()
 
                         if (!hexstr_to_uint32(&rgb_hex, rgb))
                                 goto INVALID_HEX;
-
+                        
                         if (cmdbuf.length() == 9) {
                                 m = cmdbuf.substring(7, 9);
                                 
@@ -327,7 +329,7 @@ void serialEvent()
                                         goto INVALID_HEX;
                                 
                                 mainstrp_bright = m_hex;
-                                analogWrite(m_hex, MAIN_STRIP);
+                                analogWrite(MAIN_STRIP, m_hex);
                         }
                         
                         rgbstrp.ClearTo(HtmlColor(rgb_hex));
