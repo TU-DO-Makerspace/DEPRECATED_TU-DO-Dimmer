@@ -89,9 +89,9 @@ inline uint32_t uint32_pow(uint8_t base, uint8_t pow)
 inline uint8_t adc_to_rgb(uint16_t val)
 {
         if (val == 0)
-        return 0;
+                return 0;
         else if (val < 4)
-        return 1;
+                return 1;
 
         return (val >> 2);
 }
