@@ -26,8 +26,18 @@
 #define COMMON_ANODE 0
 #define COMMON_CATHODE 1
 
+/*
+ * PatchIndicator
+ * --------------
+ * Description:
+ *      A driver class for the 7-segment patch indicator display.
+ *      This class can display a digit for a given duration using the display() function,
+ *      as well as flash a digit n times for a given duration, using the display() function.
+ */
+
 class PatchIndicator
 {
+        // Segments for digits 0 - 9
         bool digits[10][7] {
                 // 0
                 {
@@ -71,20 +81,20 @@ class PatchIndicator
                 }
         };
 
-        bool _state;
-        bool _config;
-        uint8_t _common;
-        uint8_t _segments[7];
+        bool _state;                    // True if display is on, false if off
+        bool _config;                   // Stores whether the 7 segment display is a common anode(0) or common cathode(1) display
+        uint8_t _common;                // Pin of common anode or cathode
+        uint8_t _segments[7];           // Pins of all segments (a to g)
 
-        bool _busy = false;
+        bool _busy = false;             // True if patch indicator is scheduled
 
-        bool _show = false;
-        unsigned long _show_tstamp;
+        bool _show = false;             // True if patch indicator is tasked to display a number
+        unsigned long _show_tstamp;     // Timestamp for displaying digits
 
 
-        uint8_t _blinks;
-        unsigned long _blink_interval_on, _blink_interval_off;
-        unsigned long _blink_tstamp;
+        uint8_t _blinks;                                       // Number of blinks the patch indicator should perform
+        unsigned long _blink_interval_on, _blink_interval_off; // Duration of on and off intervals for blinks
+        unsigned long _blink_tstamp;                           // Timestamp for blink intervals
 
         void select(bool select);
         void toggle();

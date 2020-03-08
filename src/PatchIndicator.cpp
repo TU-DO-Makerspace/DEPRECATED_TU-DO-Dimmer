@@ -22,10 +22,33 @@
 #include <Arduino.h>
 #include "PatchIndicator.h"
 
+/* PatchIndicator
+ * --------------
+ * Description:
+ *      Empty constructor for a PatchIndicator object (useful for arrays and pointers)
+ */
+
 PatchIndicator::PatchIndicator()
 {
 
 }
+
+/* PatchIndicator
+ * --------------
+ * Parameters:
+ *      config - COMMON_ANODE - 7-Segment display uses a common anode
+ *             - COMMON_CATHODE - 7-Segment display uses a common cathode
+ *      common - Common anode or cathode
+ *      a - Pin of a segment
+ *      b - Pin of b segment
+ *      c - Pin of c segment
+ *      d - Pin of d segment
+ *      e - Pin of e segment
+ *      f - Pin of f segment
+ *      g - Pin of g segment
+ * Description:
+ *      Initializes 7-segment patch indicator
+ */
 
 PatchIndicator::PatchIndicator(bool config, uint8_t common, uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t e, uint8_t f, uint8_t g) :
 _config(config), _common(common)
@@ -46,11 +69,28 @@ _config(config), _common(common)
         select(false);
 }
 
-void PatchIndicator::set(uint8_t num)
+/* PatchIndicator::set
+ * --------------
+ * Parameters:
+ *      dig - Digit from 0 - 9 to be displayed
+ * Description:
+ *      Sets the 7-segment display to a digit between 0 and 9.
+ */
+
+void PatchIndicator::set(uint8_t dig)
 {
         for (uint8_t i = 0; i < 7; i++)
-                digitalWrite(_segments[i], (_config == COMMON_CATHODE) ? digits[num][i] : !digits[num][i]);
+                digitalWrite(_segments[i], (_config == COMMON_CATHODE) ? digits[dig][i] : !digits[dig][i]);
 }
+
+/* PatchIndicator::select
+ * ----------------------
+ * Parameters:
+ *      select - If true, the 7-segment patch indicator is enabled,
+ *               if false, the 7-segment patch indicator is disabled
+ * Description:
+ *      Selects/Deselects Patch indicator
+ */
 
 void PatchIndicator::select(bool select)
 {
@@ -58,16 +98,39 @@ void PatchIndicator::select(bool select)
         digitalWrite(_common, (_config == COMMON_ANODE) ? select : !select);
 }
 
+/* PatchIndicator::toggle
+ * ----------------------
+ * Description:
+ *      Toggles selection
+ */
+
 void PatchIndicator::toggle()
 {
         _state = !_state;
         digitalWrite(_common, (_config == COMMON_ANODE) ? _state : !_state);
 }
 
+/* PatchIndicator::busy
+ * ----------------------
+ * Returns:
+ *      True, if the patch indicator tasked (ex. to display or blink).
+ *      False, if the patch indicator is not tasked.
+ * Description:
+ *      Indicates whether the update() function must be called.
+ */
+
 bool PatchIndicator::busy()
 {
         return _busy;
 }
+
+/* PatchIndicator::show
+ * --------------------
+ * Parameters:
+ *      duration - Duration in ms for which the set digit should be displayed
+ * Description:
+ *      Displays the currently set digit for n ms
+ */
 
 void PatchIndicator::show(unsigned long duration)
 {
@@ -77,6 +140,16 @@ void PatchIndicator::show(unsigned long duration)
         _show_tstamp = millis() + duration;
         _busy = true;
 }
+
+/* PatchIndicator::blink
+ * ---------------------
+ * Parameters:
+ *      blinks - Number of times the currently set number should be blinked/flashed
+ *      interval_on - Duration of on time during blink
+ *      interval_off - Duration of off time during blink
+ * Description:
+ *      Flashes the set number n times
+ */
 
 void PatchIndicator::blink(uint8_t blinks, unsigned long interval_on, unsigned long interval_off)
 {
@@ -88,6 +161,14 @@ void PatchIndicator::blink(uint8_t blinks, unsigned long interval_on, unsigned l
         _blink_tstamp = millis() + interval_on;
         _busy = true;
 }
+
+/* PatchIndicator::update
+ * ----------------------
+ * Description:
+ *      Performs scheduled tasks (ex. displaying or blinking a digit).
+ *      This function must be repeatedly called if the busy() function
+ *      returns true.
+ */
 
 void PatchIndicator::update() {
         if (_show && _show_tstamp <= millis())

@@ -487,22 +487,21 @@ void setup()
 // Main loop
 //////////////////////////////
 
-// Avoid implementing time intensive
-// instructions/operations, as delays
-// will reduce the smoothness of the
-// color transisitons
-
 /*
  * loop
  * -----
  * Description:
  *      The main loop of the dimmer firmware.
+ * 
  *       - Read the values of the RGB and main light potentiometers
  *       - Checks if the light has been programmed (ex. by loading a patch or by applying a html code).
  *         If programmed, the RGB and main light are only changed if potentiometer movement is detected.
  *       - RGB light and main lights are set according to the potentiometers
  *       - The rotary encoder is tested
  *       - The patch indicator is updated/handled
+ * 
+ *       Avoid implementing time intensive instructions/operations, as any delays
+ *       will reduce the smoothness of the color transitions.
  */
 
 void loop()
@@ -512,9 +511,9 @@ void loop()
         if (!programmed || rgbm_pot_mov_det(rgbmpots, avg, MAX_POT_MOV_DEV)) {
                 rgbstrp_color = rgbmpots.rgb;
                 mainstrp_bright = rgbmpots.M;
-                rgbstrp.ClearTo(rgbstrp_color);
+                rgbstrp.ClearTo(rgbstrp_color); // Set RGB strip
                 rgbstrp.Show();
-                analogWrite(MAIN_STRIP, mainstrp_bright);
+                analogWrite(MAIN_STRIP, mainstrp_bright); // Set main light strip
                 programmed = false;
         }
 
