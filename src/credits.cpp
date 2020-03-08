@@ -22,12 +22,34 @@
 #include "config.h"
 #include "credits.h"
 
+/*
+ * flash
+ * -----------
+ * Parameters:
+ *      rgbstrp - Pointer to a NeoPixel RGB strip driver object
+ *      color - Color to be flashed
+ *      duration - Duration for color to be flashed 
+ * Description:
+ *      "Flashes"/Displays a provided color for a provided duration.
+ *      The RGB strip must still be turned off manually after this function
+ *      has been called.
+ */
+
 void flash(NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod> *rgbstrp, RgbColor color, unsigned long duration)
 {
         rgbstrp->ClearTo(color);
         rgbstrp->Show();
         delay(duration);
 }
+
+/*
+ * flash
+ * -----------
+ * Parameters:
+ *      rgbstrp - Pointer to a NeoPixel RGB strip driver object
+ * Description:
+ *      Author credits
+ */
 
 void authors_credit(NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod> *rgbstrp)
 {
