@@ -89,3 +89,9 @@
 "\n"\
 "\n"\
 "Makerspace | Do it yourself!"
+
+// Authors Credit
+#define MORSE_SHORT 500
+#define MORSE_LONG 3 * MORSE_SHORT
+#define MORSE_BTWN MORSE_SHORT
+#define MORSE_LETTER MORSE_LONG

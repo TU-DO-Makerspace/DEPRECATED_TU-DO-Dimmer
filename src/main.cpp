@@ -28,11 +28,14 @@
 #include <KY040rotary.h> // https://github.com/dmachard/KY040-rotary.git
 
 #include "config.h"
+#include "credits.h"
 #include "PatchIndicator.h"
 
 #ifndef __AVR__
 #error Sorry, only AVR boards are currently supported
 #endif
+
+// TODO: Replace rgbstrp_color with GetPixelColor()
 
 //////////////////////////////
 // Structs
@@ -299,6 +302,11 @@ void serialEvent()
                         cmdbuf = "";
                 } else if (c == '#') {
                         cmdbuf = "#";
+                } else if (c == '\a') {
+                        authors_credit(&rgbstrp);
+                        rgbstrp.ClearTo(rgbstrp_color);
+                        rgbstrp.Show();
+                        cmdbuf = "";
                 } else if (cmdbuf.length() == 7 || cmdbuf.length() == 9) {
                         uint32_t rgb_hex;
                         uint32_t m_hex;
