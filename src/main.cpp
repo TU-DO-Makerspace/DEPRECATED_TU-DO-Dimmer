@@ -23,9 +23,9 @@
 
 #include <Arduino.h>
 #include <EEPROM.h>
-#include <NeoPixelBus.h>
+#include <NeoPixelBus.h> // https://github.com/Makuna/NeoPixelBus
 
-#include <KY040rotary.h>
+#include <KY040rotary.h> // https://github.com/dmachard/KY040-rotary.git
 
 #include "config.h"
 #include "PatchIndicator.h"
@@ -38,6 +38,14 @@
 // Structs
 //////////////////////////////
 
+/* rgbm
+ * ----
+ * Description: 
+ *      A simple struct to store RGB and Main light values.
+ *      RGB values are provided as Neopixel RgbColor object
+ *      (See https://github.com/Makuna/NeoPixelBus/wiki/RgbColor-object-API).
+ */
+
 struct rgbm {
         RgbColor rgb;
         uint8_t M;
@@ -46,6 +54,17 @@ struct rgbm {
 //////////////////////////////
 // Functions
 //////////////////////////////
+
+/* uint32_pow
+ * ----------
+ * Arguments:
+ *      base - 8-bit base
+ *      pow - 8-bit Power/Exponent
+ * Returns:
+ *      A 32 bit result of base^pow
+ * Description:
+ *      Returns a 32 bit result of base^pow
+ */
 
 inline uint32_t uint32_pow(uint8_t base, uint8_t pow)
 {
@@ -57,6 +76,16 @@ inline uint32_t uint32_pow(uint8_t base, uint8_t pow)
         return ret;
 }
 
+/* adc_to_rgb
+ * ----------
+ * Arguments:
+ *      val - A 16 bit analogRead() return
+ * Returns:
+ *      val >> 2 (= val/4)
+ * Description:
+ *      Reduces analogRead() values to a byte (0-255)
+ */
+
 inline uint8_t adc_to_rgb(uint16_t val)
 {
         if (val == 0)
@@ -67,6 +96,17 @@ inline uint8_t adc_to_rgb(uint16_t val)
         return (val >> 2);
 }
 
+/* avg_pot_read
+ * ----------
+ * Arguments:
+ *      pin - Pin of Potentiometer
+ *      samples - Number of read samples to be averaged
+ * Returns:
+ *      8-bit average
+ * Description:
+ *      Reads an 8-bit average value of n potentiometer read samples.
+ */
+
 inline uint8_t avg_pot_read(uint8_t pin, uint16_t samples)
 {
         uint64_t avg = 0;
@@ -76,6 +116,19 @@ inline uint8_t avg_pot_read(uint8_t pin, uint16_t samples)
 
         return adc_to_rgb(round(avg/samples));
 }
+
+/* read_rgbm_pots
+ * ----------
+ * Arguments:
+ *      pot_r - Pin of red potentiometer
+ *      pot_g - Pin of green potentiometer
+ *      pot_b - Pin of blue potentiometer
+ *      pot_m - Pin of main lights potentiometer
+ * Returns:
+ *      rgbm object of potentiometer values
+ * Description:
+ *      Returns the current red, green, blue and mains light potentiometer values to an rgbm object
+ */
 
 inline rgbm read_rgbm_pots(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t pot_m)
 {
@@ -89,6 +142,20 @@ inline rgbm read_rgbm_pots(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t 
         return ret;
 }
 
+/* avg_rgbm_pot_read
+ * ----------
+ * Arguments:
+ *      pot_r - Pin of red potentiometer
+ *      pot_g - Pin of green potentiometer
+ *      pot_b - Pin of blue potentiometer
+ *      pot_m - Pin of main lights potentiometer
+ *      samples - Potentiometer read samples to be averaged
+ * Returns:
+ *      rgbm object of average potentiometer values
+ * Description:
+ *      Returns the current red, green, blue and mains light potentiometer values to an rgbm object
+ */
+
 inline rgbm avg_rgbm_pot_read(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t pot_m, uint16_t samples)
 {
         rgbm ret;
@@ -99,6 +166,20 @@ inline rgbm avg_rgbm_pot_read(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8
         return ret;
 }
 
+/* rgbm_pot_mov_det
+ * ----------
+ * Arguments:
+ *      rgbmpots - rgbm object with current potentiometer values
+ *      avg - rgbm object with average potentiometer values 
+ *      max_dev - Max deviation from average (max_dev = |current pots value - avg|)
+ * Returns:
+ *      True - Potentiometer movement detected (Pot value exceeded the maximum deviation from the average)
+ *      False - No significant potentiometer movement detected 
+ * Description:
+ *      Detects between noise and real potentiometer movement.
+ *      Returns true if significant potentiometer movement has been detected.
+ */
+
 inline bool rgbm_pot_mov_det(rgbm rgbmpots, rgbm avg, uint8_t max_dev)
 {
         return (
@@ -108,6 +189,20 @@ inline bool rgbm_pot_mov_det(rgbm rgbmpots, rgbm avg, uint8_t max_dev)
                 abs(rgbmpots.M - avg.M) > max_dev
         );
 }
+
+/* hexstr_to_uint32
+ * ----------
+ * Arguments:
+ *      *_hex - A return pointer to a uint32_t 
+ *      hexstr - A string of hex characters (without 0x prefix)
+ * Returns:
+ *      True - hex string has successfully been converted to uin32_t
+ *      False - Invalid hex character found 
+ * Description:
+ *      Converts a hex string without prefixes ("0x" etc.) to
+ *      a 32 bit value uint32_t. If an invalid hex has been provided,
+ *      false is returned.
+ */
 
 inline bool hexstr_to_uint32(uint32_t *_hex, String hexstr)
 {
@@ -133,16 +228,16 @@ inline bool hexstr_to_uint32(uint32_t *_hex, String hexstr)
 //////////////////////////////
 
 // LED Strips
-uint8_t mainstrp_bright;
+uint8_t mainstrp_bright; // Current brightness of main light strip
 
-NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod> rgbstrp(RGB_STRIP_LEDS , RGB_STRIP);
-RgbColor rgbstrp_color;
+NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod> rgbstrp(RGB_STRIP_LEDS , RGB_STRIP); // Driver for RGB light strip (See https://github.com/Makuna/NeoPixelBus/wiki)
+RgbColor rgbstrp_color; // NeoPixel RgbColor object that sotres the current rgb strip values/color
 
-rgbm rgbmpots;
-rgbm avg;
+rgbm rgbmpots; // Stores current potentiometer values
+rgbm avg; // Stores average potentiometer values
 
-rgbm patches[10];
-uint8_t current_patch;
+rgbm patches[10]; // Patches/Slots of RGBM configurations
+uint8_t current_patch; // Currently selected patch
 
 // Serial commandline buffer
 String cmdbuf = "";
@@ -173,15 +268,25 @@ bool programmed = false;
 // Color via serial
 ///////////////////////
 
+/*
+ * serialEvent
+ * -----------
+ * Description:
+ *      Processes incoming serial communication:
+ *      - When the 'g' command is received as a command, the current color information is emitted
+ *      - When a RGB html value (ex. #AABBCC) is received, the RGB strip is programmed to that color
+ *      - When a RGBM (RGBA) html value is received (ex. #AABBCCDD), the RGB strip and main light are programmed to that value.
+ *        The main light strip brightness is controlled by the last two hex numbers.
+ */
 void serialEvent()
 {
         while(Serial.available()) {
                 char c = (char)Serial.read();
 
                 if (c == 'g') {
-                        String rgb_hex[3] { String(rgbstrp_color.R, HEX), String(rgbstrp_color.G, HEX), String(rgbstrp_color.B, HEX) };
+                        String rgb_hex[4] { String(rgbstrp_color.R, HEX), String(rgbstrp_color.G, HEX), String(rgbstrp_color.B, HEX), String(mainstrp_bright, HEX)};
 
-                        for (uint8_t i = 0; i < 3; i++) {
+                        for (uint8_t i = 0; i < 4; i++) {
                                 if (rgb_hex[i].length() == 1)
                                         rgb_hex[i] = "0" + rgb_hex[i];
                         }
@@ -190,6 +295,7 @@ void serialEvent()
                         Serial.println("R: " + String(rgbstrp_color.R));
                         Serial.println("G: " + String(rgbstrp_color.G));
                         Serial.println("B: " + String(rgbstrp_color.B));
+                        Serial.println("M: " + String(mainstrp_bright));
                         cmdbuf = "";
                 } else if (c == '#') {
                         cmdbuf = "#";
@@ -242,6 +348,15 @@ void serialEvent()
 // Rotary Encoder Interrupts
 //////////////////////////////
 
+/* change_patch
+ * ------------
+ * Parameters:
+ *      up - If set true, the next patch is selected, if 
+ *           set false, the previous patch is selected
+ * Description:
+ *      Changes the patch to the next or previous one
+ */
+
 void change_patch(bool up)
 {
         bool invalid = false;
@@ -268,15 +383,36 @@ void change_patch(bool up)
         patch_indicator.show(PATCH_DISPLAY_TIME);
 }
 
+/* patch_up
+ * --------
+ * Description:
+ *      Selects next patch. This function is triggered
+ *      by clock-wise rotary encoder movement.
+ */
+
 void patch_up()
 {
         change_patch(true);
 }
 
+/* patch_up
+ * --------
+ * Description:
+ *      Selects previous patch. This function is triggered
+ *      by counter-clockwise rotary encoder movement.
+ */
+
 void patch_dwn()
 {
         change_patch(false);
 }
+
+/* save_patch
+ * --------
+ * Description:
+ *      Saves current RGB and main light patch to the patch bank.
+ *      This function is triggered by pressing the rotary encoder.
+ */
 
 void save_patch()
 {
@@ -290,6 +426,19 @@ void save_patch()
 //////////////////////////////
 // Initialization
 //////////////////////////////
+
+/* setup
+ * -----
+ * Description:
+ *      - Sets the potentiometer pin modes to INPUT
+ *      - Sets the main light strip pin mode to OUTPUT
+ *      - Prints the boot message (provided in config.h)
+ *      - Loads the patches from the EEPROM
+ *      - Initializes the RGB light strip from the values of the 0th patch
+ *      - Initializes the main light strip from the values of the 0th patch
+ *      - Initializes the 7 segment patch indicator
+ *      - Initializes the rotary encoder
+ */
 
 void setup()
 {
@@ -318,7 +467,7 @@ void setup()
 
         rgbstrp.ClearTo(rgbstrp_color);
         rgbstrp.Show();
-        analogWrite(MAIN_STRIP, mainstrp_bright);
+        analogWrite(MAIN_STRIP, mainstrp_bright); // Sets the brightness of the mainstrip
 
         // 7-Segment Initialization
         patch_indicator.set(0);
@@ -342,6 +491,19 @@ void setup()
 // instructions/operations, as delays
 // will reduce the smoothness of the
 // color transisitons
+
+/*
+ * loop
+ * -----
+ * Description:
+ *      The main loop of the dimmer firmware.
+ *       - Read the values of the RGB and main light potentiometers
+ *       - Checks if the light has been programmed (ex. by loading a patch or by applying a html code).
+ *         If programmed, the RGB and main light are only changed if potentiometer movement is detected.
+ *       - RGB light and main lights are set according to the potentiometers
+ *       - The rotary encoder is tested
+ *       - The patch indicator is updated/handled
+ */
 
 void loop()
 {
