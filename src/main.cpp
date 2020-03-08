@@ -512,7 +512,7 @@ void loop()
         rgbmpots = read_rgbm_pots(R_POT, G_POT, B_POT, M_POT);
 
         if (!programmed || rgbm_pot_mov_det(rgbmpots, avg, MAX_POT_MOV_DEV)) {
-                rgbstrp.ClearTo(rgbstrp.GetPixelColor(0)); // Set RGB strip
+                rgbstrp.ClearTo(rgbmpots.rgb); // Set RGB strip
                 rgbstrp.Show();
                 mainstrp_bright = rgbmpots.M;
                 analogWrite(MAIN_STRIP, mainstrp_bright); // Set main light strip
