@@ -88,4 +88,4 @@
 "  \\/____/   \\/_____/\n"\
 "\n"\
 "\n"\
-"Makerspace"
+"Makerspace | Do it yourself!"
