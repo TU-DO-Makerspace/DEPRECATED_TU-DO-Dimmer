@@ -256,7 +256,7 @@ PatchIndicator patch_indicator (
 );
 
 // Rotary Encoder
-KY040 bright_enc(BRIGHT_ENC_CLK, BRIGHT_ENC_DT, BRIGHT_ENC_SW);
+KY040 rotary_enc(ROTARY_ENC_CLK, ROTARY_ENC_DT, ROTARY_ENC_SW);
 
 // External color programming
 
@@ -477,10 +477,10 @@ void setup()
         programmed = true;
 
         // Rotary Encoder Initialization
-        bright_enc.Begin();
-        bright_enc.OnButtonRight(patch_up);
-        bright_enc.OnButtonLeft(patch_dwn);
-        bright_enc.OnButtonClicked(save_patch);
+        rotary_enc.Begin();
+        rotary_enc.OnButtonRight(patch_up);
+        rotary_enc.OnButtonLeft(patch_dwn);
+        rotary_enc.OnButtonClicked(save_patch);
 }
 
 //////////////////////////////
@@ -518,7 +518,7 @@ void loop()
                 programmed = false;
         }
 
-        bright_enc.Process(millis());
+        rotary_enc.Process(millis());
 
         if (patch_indicator.busy())
                 patch_indicator.update();

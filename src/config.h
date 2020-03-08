@@ -32,9 +32,9 @@
 #define M_POT A2 // Main light
 
 // Rotary encoder
-#define BRIGHT_ENC_CLK 13
-#define BRIGHT_ENC_DT  12
-#define BRIGHT_ENC_SW  11
+#define ROTARY_ENC_CLK 13
+#define ROTARY_ENC_DT  12
+#define ROTARY_ENC_SW  11
 
 // LED Strips
 #define MAIN_STRIP     3
