@@ -35,8 +35,6 @@
 #error Sorry, only AVR boards are currently supported
 #endif
 
-// TODO: Replace rgbstrp_color with GetPixelColor()
-
 //////////////////////////////
 // Structs
 //////////////////////////////
@@ -234,7 +232,6 @@ inline bool hexstr_to_uint32(uint32_t *_hex, String hexstr)
 uint8_t mainstrp_bright; // Current brightness of main light strip
 
 NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod> rgbstrp(RGB_STRIP_LEDS , RGB_STRIP); // Driver for RGB light strip (See https://github.com/Makuna/NeoPixelBus/wiki)
-RgbColor rgbstrp_color; // NeoPixel RgbColor object that sotres the current rgb strip values/color
 
 rgbm rgbmpots; // Stores current potentiometer values
 rgbm avg; // Stores average potentiometer values
@@ -287,7 +284,7 @@ void serialEvent()
                 char c = (char)Serial.read();
 
                 if (c == 'g') {
-                        String rgb_hex[4] { String(rgbstrp_color.R, HEX), String(rgbstrp_color.G, HEX), String(rgbstrp_color.B, HEX), String(mainstrp_bright, HEX)};
+                        String rgb_hex[4] { String(rgbstrp.GetPixelColor(0).R, HEX), String(rgbstrp.GetPixelColor(0).G, HEX), String(rgbstrp.GetPixelColor(0).B, HEX), String(mainstrp_bright, HEX)};
 
                         for (uint8_t i = 0; i < 4; i++) {
                                 if (rgb_hex[i].length() == 1)
@@ -295,16 +292,17 @@ void serialEvent()
                         }
 
                         Serial.println("Current Color: #" + rgb_hex[0] + rgb_hex[1] + rgb_hex[2]);
-                        Serial.println("R: " + String(rgbstrp_color.R));
-                        Serial.println("G: " + String(rgbstrp_color.G));
-                        Serial.println("B: " + String(rgbstrp_color.B));
+                        Serial.println("R: " + String(rgbstrp.GetPixelColor(0).R));
+                        Serial.println("G: " + String(rgbstrp.GetPixelColor(0).G));
+                        Serial.println("B: " + String(rgbstrp.GetPixelColor(0).B));
                         Serial.println("M: " + String(mainstrp_bright));
                         cmdbuf = "";
                 } else if (c == '#') {
                         cmdbuf = "#";
                 } else if (c == '\a') {
+                        RgbColor prev_color = rgbstrp.GetPixelColor(0);
                         authors_credit(&rgbstrp);
-                        rgbstrp.ClearTo(rgbstrp_color);
+                        rgbstrp.ClearTo(prev_color);
                         rgbstrp.Show();
                         cmdbuf = "";
                 } else if (cmdbuf.length() == 7 || cmdbuf.length() == 9) {
@@ -332,8 +330,7 @@ void serialEvent()
                                 analogWrite(m_hex, MAIN_STRIP);
                         }
                         
-                        rgbstrp_color = HtmlColor(rgb_hex);
-                        rgbstrp.ClearTo(rgbstrp_color);
+                        rgbstrp.ClearTo(HtmlColor(rgb_hex));
                         rgbstrp.Show();
 
                         // Read average of pots for potentiometer movement detection 
@@ -378,8 +375,7 @@ void change_patch(bool up)
   
         if (!invalid)
         {
-                rgbstrp_color = patches[current_patch].rgb;
-                rgbstrp.ClearTo(rgbstrp_color);
+                rgbstrp.ClearTo(patches[current_patch].rgb);
                 rgbstrp.Show();
                 mainstrp_bright = patches[current_patch].M;
                 analogWrite(MAIN_STRIP, mainstrp_bright);
@@ -424,7 +420,7 @@ void patch_dwn()
 
 void save_patch()
 {
-        patches[current_patch].rgb = rgbstrp_color;
+        patches[current_patch].rgb = rgbstrp.GetPixelColor(0);
         patches[current_patch].M = mainstrp_bright;
         EEPROM.put(EEPROM_PATCH_ADDR + (sizeof(rgbm) * current_patch), patches[current_patch]);
         patch_indicator.blink(NUM_SAVE_BLINKS, BLINK_INTERVAL_ON, BLINK_INTERVAL_OFF);
@@ -470,11 +466,10 @@ void setup()
 
         // Load 0th patch on boot
         current_patch = 0;
-        rgbstrp_color = patches[current_patch].rgb;
-        mainstrp_bright = patches[current_patch].M;
 
-        rgbstrp.ClearTo(rgbstrp_color);
+        rgbstrp.ClearTo(patches[current_patch].rgb);
         rgbstrp.Show();
+        mainstrp_bright = patches[current_patch].M;
         analogWrite(MAIN_STRIP, mainstrp_bright); // Sets the brightness of the mainstrip
 
         // 7-Segment Initialization
@@ -517,10 +512,9 @@ void loop()
         rgbmpots = read_rgbm_pots(R_POT, G_POT, B_POT, M_POT);
 
         if (!programmed || rgbm_pot_mov_det(rgbmpots, avg, MAX_POT_MOV_DEV)) {
-                rgbstrp_color = rgbmpots.rgb;
-                mainstrp_bright = rgbmpots.M;
-                rgbstrp.ClearTo(rgbstrp_color); // Set RGB strip
+                rgbstrp.ClearTo(rgbstrp.GetPixelColor(0)); // Set RGB strip
                 rgbstrp.Show();
+                mainstrp_bright = rgbmpots.M;
                 analogWrite(MAIN_STRIP, mainstrp_bright); // Set main light strip
                 programmed = false;
         }
