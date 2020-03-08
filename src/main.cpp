@@ -291,7 +291,7 @@ void serialEvent()
                                         rgb_hex[i] = "0" + rgb_hex[i];
                         }
 
-                        Serial.println("Current Color: #" + rgb_hex[0] + rgb_hex[1] + rgb_hex[2]);
+                        Serial.println("Current Color: #" + rgb_hex[0] + rgb_hex[1] + rgb_hex[2] + rgb_hex[3]);
                         Serial.println("R: " + String(rgbstrp.GetPixelColor(0).R));
                         Serial.println("G: " + String(rgbstrp.GetPixelColor(0).G));
                         Serial.println("B: " + String(rgbstrp.GetPixelColor(0).B));
