@@ -32,28 +32,28 @@
 #define M_POT A2 // Main light
 
 // Rotary encoder
-#define ROTARY_ENC_CLK 13
-#define ROTARY_ENC_DT  12
-#define ROTARY_ENC_SW  11
+#define ROTARY_ENC_DT  2 // INT 0
+#define ROTARY_ENC_CLK 3 // INT 1
+#define ROTARY_ENC_SW  4
 
 // LED Strips
-#define MAIN_STRIP     3
-#define RGB_STRIP      2
+#define MAIN_STRIP     5
+#define RGB_STRIP      6
 #define RGB_STRIP_LEDS 8 // Number of LEDs/Pixels on the RGB strip
 
 // 7-Segment Patch Indicator
-#define SEV_SEG_A      9
+#define SEV_SEG_A      7
 #define SEV_SEG_B      8
-#define SEV_SEG_C      7
-#define SEV_SEG_D      6
-#define SEV_SEG_E      5
-#define SEV_SEG_F      4
+#define SEV_SEG_C      9
+#define SEV_SEG_D      10
+#define SEV_SEG_E      11
+#define SEV_SEG_F      12
 #define SEV_SEG_G      A0
-#define SEV_SEG_COMMON 10
+#define SEV_SEG_COMMON A1
 
-////////////////////////
+///////////////////////////
 // Firmware parameters
-////////////////////////
+///////////////////////////
 
 // Potentiometer movement detection
 #define AVG_SAMPLES     100
