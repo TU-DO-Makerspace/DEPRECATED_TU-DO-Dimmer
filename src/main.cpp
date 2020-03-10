@@ -118,7 +118,7 @@ inline uint8_t avg_pot_read(uint8_t pin, uint16_t samples)
         return adc_to_rgb(round(avg/samples));
 }
 
-/* read_rgbm_pots
+/* rgbm_pots_read
  * ----------
  * Arguments:
  *      pot_r - Pin of red potentiometer
@@ -131,7 +131,7 @@ inline uint8_t avg_pot_read(uint8_t pin, uint16_t samples)
  *      Returns the current red, green, blue and mains light potentiometer values to an rgbm object
  */
 
-inline rgbm read_rgbm_pots(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t pot_m)
+inline rgbm rgbm_pots_read(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t pot_m)
 {
         rgbm ret;
         
@@ -160,10 +160,12 @@ inline rgbm read_rgbm_pots(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t 
 inline rgbm avg_rgbm_pot_read(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t pot_m, uint16_t samples)
 {
         rgbm ret;
+
         ret.rgb.R = avg_pot_read(pot_r, samples);
         ret.rgb.G = avg_pot_read(pot_g, samples);
         ret.rgb.B = avg_pot_read(pot_b, samples);
         ret.M = avg_pot_read(pot_m, samples);
+        
         return ret;
 }
 
@@ -355,6 +357,12 @@ void serialEvent()
 // Rotary Encoder Interrupts
 //////////////////////////////
 
+void RotateInterruptHandler(void)
+{
+        Serial.println("Interrupt!");
+        rotary_enc.HandleRotateInterrupt();
+}
+
 /* change_patch
  * ------------
  * Parameters:
@@ -482,7 +490,7 @@ void setup()
         programmed = true;
 
         // Rotary Encoder Initialization
-        rotary_enc.Begin();
+        rotary_enc.Begin(NULL, RotateInterruptHandler);
         rotary_enc.OnButtonRight(patch_up);
         rotary_enc.OnButtonLeft(patch_dwn);
         rotary_enc.OnButtonClicked(save_patch);
@@ -511,7 +519,7 @@ void setup()
 
 void loop()
 {
-        rgbmpots = read_rgbm_pots(R_POT, G_POT, B_POT, M_POT);
+        rgbmpots = rgbm_pots_read(R_POT, G_POT, B_POT, M_POT);
 
         if (!programmed || rgbm_pot_mov_det(rgbmpots, avg, MAX_POT_MOV_DEV)) {
                 rgbstrp.ClearTo(rgbmpots.rgb); // Set RGB strip
@@ -521,7 +529,7 @@ void loop()
                 programmed = false;
         }
 
-        rotary_enc.Process(millis());
+        // rotary_enc.Process(millis());
 
         if (patch_indicator.busy())
                 patch_indicator.update();
