@@ -281,7 +281,6 @@ bool programmed = false;
  *        The main light strip brightness is controlled by the last two hex numbers.
  */
 
-bool rgb_html_passed = false;
 void serialEvent()
 {
         while(Serial.available()) {
