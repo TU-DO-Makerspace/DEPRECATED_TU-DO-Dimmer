@@ -25,11 +25,10 @@
 #include <EEPROM.h>
 #include <NeoPixelBus.h> // https://github.com/Makuna/NeoPixelBus
 
-#include <KY040rotary.h> // https://github.com/dmachard/KY040-rotary.git
-
 #include "config.h"
 #include "credits.h"
 #include "PatchIndicator.h"
+#include "PatchEncoder.h"
 
 #ifndef __AVR__
 #error Sorry, only AVR boards are currently supported
@@ -244,6 +243,9 @@ uint8_t current_patch; // Currently selected patch
 // Serial commandline buffer
 String cmdbuf = "";
 
+// Rotary Encoder
+PatchEncoder patch_encoder(ROTARY_ENC_DT, ROTARY_ENC_CLK, ROTARY_ENC_SW, ROTARY_ENC_DEBOUCE_TIME);
+
 // 7 Segment patch indicator
 PatchIndicator patch_indicator (
         COMMON_ANODE, 
@@ -256,9 +258,6 @@ PatchIndicator patch_indicator (
         SEV_SEG_F, 
         SEV_SEG_G
 );
-
-// Rotary Encoder
-KY040 rotary_enc(ROTARY_ENC_CLK, ROTARY_ENC_DT, ROTARY_ENC_SW);
 
 // External color programming
 
@@ -275,9 +274,9 @@ bool programmed = false;
  * -----------
  * Description:
  *      Processes incoming serial communication:
- *      - When the 'g' command is received as a command, the current color information is emitted
+ *      - When the 'g' command is received, the current color information is emitted
  *      - When a RGB html value (ex. #AABBCC) is received, the RGB strip is programmed to that color
- *      - When a RGBM (RGBA) html value is received (ex. #AABBCCDD), the RGB strip and main light are programmed to that value.
+ *      - When a RGBM (RGBA) html value is received (ex. #AABBCCDD), the RGB strip and main light is programmed to that value.
  *        The main light strip brightness is controlled by the last two hex numbers.
  */
 
@@ -355,12 +354,6 @@ void serialEvent()
 //////////////////////////////
 // Rotary Encoder Interrupts
 //////////////////////////////
-
-void RotateInterruptHandler(void)
-{
-        Serial.println("Interrupt!");
-        rotary_enc.HandleRotateInterrupt();
-}
 
 /* change_patch
  * ------------
@@ -487,12 +480,6 @@ void setup()
 
         avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
         programmed = true;
-
-        // Rotary Encoder Initialization
-        rotary_enc.Begin(NULL, RotateInterruptHandler);
-        rotary_enc.OnButtonRight(patch_up);
-        rotary_enc.OnButtonLeft(patch_dwn);
-        rotary_enc.OnButtonClicked(save_patch);
 }
 
 //////////////////////////////
@@ -528,7 +515,17 @@ void loop()
                 programmed = false;
         }
 
-        // rotary_enc.Process(millis());
+        switch(patch_encoder.action()) {
+                case pressed:
+                        save_patch();
+                        break;
+                case left:
+                        change_patch(false);
+                        break;
+                case right:
+                        change_patch(true);
+                        break;
+        }
 
         if (patch_indicator.busy())
                 patch_indicator.update();

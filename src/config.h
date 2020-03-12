@@ -55,6 +55,9 @@
 // Firmware parameters
 ///////////////////////////
 
+// Rotary Encoder
+#define ROTARY_ENC_DEBOUCE_TIME 40
+
 // Potentiometer movement detection
 #define AVG_SAMPLES     100
 #define MAX_POT_MOV_DEV 6
