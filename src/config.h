@@ -39,7 +39,7 @@
 // LED Strips
 #define MAIN_STRIP     5
 #define RGB_STRIP      6
-#define RGB_STRIP_LEDS 8 // Number of LEDs/Pixels on the RGB strip
+#define RGB_STRIP_LEDS 30 // Number of LEDs/Pixels on the RGB strip
 
 // 7-Segment Patch Indicator
 #define SEV_SEG_A      7
