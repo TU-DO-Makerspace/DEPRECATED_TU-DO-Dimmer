@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include "PatchIndicator.h"
+
 ///////////////////////////
 // Pins
 ///////////////////////////
@@ -42,6 +44,7 @@
 #define RGB_STRIP_LEDS 30 // Number of LEDs/Pixels on the RGB strip
 
 // 7-Segment Patch Indicator
+#define SEV_SEG_COMMON_MODE COMMON_ANODE
 #define SEV_SEG_A      7
 #define SEV_SEG_B      8
 #define SEV_SEG_C      9

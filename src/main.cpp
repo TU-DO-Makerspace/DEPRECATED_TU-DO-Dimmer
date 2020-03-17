@@ -248,7 +248,7 @@ PatchEncoder patch_encoder(ROTARY_ENC_DT, ROTARY_ENC_CLK, ROTARY_ENC_SW, ROTARY_
 
 // 7 Segment patch indicator
 PatchIndicator patch_indicator (
-        COMMON_ANODE, 
+        SEV_SEG_COMMON_MODE, 
         SEV_SEG_COMMON,
         SEV_SEG_A, 
         SEV_SEG_B, 
