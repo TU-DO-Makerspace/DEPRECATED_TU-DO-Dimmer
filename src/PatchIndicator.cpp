@@ -50,7 +50,7 @@ PatchIndicator::PatchIndicator()
  *      Initializes 7-segment patch indicator
  */
 
-PatchIndicator::PatchIndicator(bool config, uint8_t common, uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t e, uint8_t f, uint8_t g) :
+PatchIndicator::PatchIndicator(bool config, uint8_t common, uint8_t a, uint8_t b, uint8_t c, uint8_t d, uint8_t e, uint8_t f, uint8_t g, uint8_t dp) :
 _config(config), _common(common)
 {
         _segments[0] = a;
@@ -62,7 +62,10 @@ _config(config), _common(common)
         _segments[6] = g;
 
         pinMode(_common, OUTPUT);
-
+        
+        pinMode(dp, OUTPUT);
+        digitalWrite(dp, (_config == COMMON_CATHODE) ? LOW : HIGH);
+        
         for (uint8_t i = 0; i < 7; i++)
                 pinMode(_segments[i], OUTPUT);
 

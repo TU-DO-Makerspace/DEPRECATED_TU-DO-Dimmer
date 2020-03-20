@@ -256,7 +256,8 @@ PatchIndicator patch_indicator (
         SEV_SEG_D, 
         SEV_SEG_E, 
         SEV_SEG_F, 
-        SEV_SEG_G
+        SEV_SEG_G,
+        SEV_SEG_DP
 );
 
 // External color programming

@@ -45,14 +45,15 @@
 
 // 7-Segment Patch Indicator
 #define SEV_SEG_COMMON_MODE COMMON_ANODE
-#define SEV_SEG_A      7
-#define SEV_SEG_B      8
-#define SEV_SEG_C      9
-#define SEV_SEG_D      10
-#define SEV_SEG_E      11
-#define SEV_SEG_F      12
-#define SEV_SEG_G      A0
-#define SEV_SEG_COMMON A1
+#define SEV_SEG_A      11
+#define SEV_SEG_B      12
+#define SEV_SEG_C      7
+#define SEV_SEG_D      6
+#define SEV_SEG_E      4
+#define SEV_SEG_F      9
+#define SEV_SEG_G      8
+#define SEV_SEG_DP     13
+#define SEV_SEG_COMMON 10
 
 ///////////////////////////
 // Firmware parameters
