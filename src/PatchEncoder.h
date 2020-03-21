@@ -21,8 +21,7 @@ class PatchEncoder {
         bool _debounce;
         unsigned long _debounce_tstamp;
         
-        public:
-        
+public:
         PatchEncoder();
         PatchEncoder(uint8_t clk, uint8_t dt, uint8_t sw, unsigned long debounce_time);
         ~PatchEncoder();

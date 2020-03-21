@@ -29,8 +29,7 @@ class PushButton
     bool _pullup;
     bool _prev_state;
     
-    public:
-    
+public:    
     PushButton();
     PushButton(uint8_t pin, bool pullup);
     bool state();

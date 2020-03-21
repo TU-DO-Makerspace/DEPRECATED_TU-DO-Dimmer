@@ -34,6 +34,9 @@
 #error Sorry, only AVR boards are currently supported
 #endif
 
+#define RGB_HEX_STR_LEN  7 // #AABBCC
+#define RGBM_HEX_STR_LEN 9 // #AABBCCDD
+
 //////////////////////////////
 // Structs
 //////////////////////////////
@@ -192,39 +195,6 @@ inline bool rgbm_pot_mov_det(rgbm rgbmpots, rgbm avg, uint8_t max_dev)
         );
 }
 
-/* hexstr_to_uint32
- * ----------
- * Arguments:
- *      *_hex - A return pointer to a uint32_t 
- *      hexstr - A string of hex characters (without 0x prefix)
- * Returns:
- *      True - hex string has successfully been converted to uin32_t
- *      False - Invalid hex character found 
- * Description:
- *      Converts a hex string without prefixes ("0x" etc.) to
- *      a 32 bit value uint32_t. If an invalid hex has been provided,
- *      false is returned.
- */
-
-inline bool hexstr_to_uint32(uint32_t *_hex, String hexstr)
-{
-        uint32_t hex = 0;
-
-        for (size_t i = 0; i < hexstr.length(); i++) {
-                if (hexstr[i] >= '0' && hexstr[i] <= '9')
-                        hex += (hexstr[i] - 0x30) * uint32_pow(16, (hexstr.length() - 1 - i));
-                else if (hexstr[i] >= 'A' && hexstr[i] <= 'F')
-                        hex += (hexstr[i] - 55) * uint32_pow(16, (hexstr.length() - 1 - i));
-                else if (hexstr[i] >= 'a' && hexstr[i] <= 'f')
-                        hex += (hexstr[i] - 87) * uint32_pow(16, (hexstr.length() - 1 - i));
-                else
-                        return false;
-        }
-
-        *_hex = hex;
-        return true;
-}
-
 //////////////////////////////
 // Global vars & Objects
 //////////////////////////////
@@ -239,9 +209,6 @@ rgbm avg; // Stores average potentiometer values
 
 rgbm patches[10]; // Patches/Slots of RGBM configurations
 uint8_t current_patch; // Currently selected patch
-
-// Serial commandline buffer
-String cmdbuf = "";
 
 // Rotary Encoder
 PatchEncoder patch_encoder(ROTARY_ENC_DT, ROTARY_ENC_CLK, ROTARY_ENC_SW, ROTARY_ENC_DEBOUCE_TIME);
@@ -270,6 +237,132 @@ bool programmed = false;
 // Color via serial
 ///////////////////////
 
+/* print_rgbm
+ * ----------
+ * Arguments:
+ *      rgbm - rgbm object to be printed
+ * Description:
+ *      Prints rgbm values to the serial console 
+ */
+
+void print_rgbm(rgbm rgbm)
+{
+        String rgb_hex[4] { String(rgbm.rgb.R, HEX), String(rgbm.rgb.G, HEX), String(rgbm.rgb.B, HEX), String(rgbm.M, HEX)};
+
+        for (uint8_t i = 0; i < 4; i++) {
+                if (rgb_hex[i].length() == 1)
+                        rgb_hex[i] = "0" + rgb_hex[i];
+        }
+
+        Serial.println("Current Color: #" + rgb_hex[0] + rgb_hex[1] + rgb_hex[2] + rgb_hex[3]);
+        Serial.println("R: " + String(rgbm.rgb.R));
+        Serial.println("G: " + String(rgbm.rgb.G));
+        Serial.println("B: " + String(rgbm.rgb.B));
+        Serial.println("M: " + String(rgbm.M));
+}
+
+/* hexstr_to_uint32
+ * ----------
+ * Arguments:
+ *      *_hex - A return pointer to a uint32_t 
+ *      hexstr - A string of hex characters (without 0x prefix)
+ * Returns:
+ *      True - hex string has successfully been converted to uin32_t
+ *      False - Invalid hex character found 
+ * Description:
+ *      Converts a hex string without prefixes ("0x" etc.) to
+ *      a 32 bit value uint32_t. If an invalid hex has been provided,
+ *      false is returned.
+ */
+
+bool hexstr_to_uint32(String hexstr, uint32_t *_hex)
+{
+        uint32_t hex = 0;
+
+        for (size_t i = 0; i < hexstr.length(); i++) {
+                if (hexstr[i] >= '0' && hexstr[i] <= '9')
+                        hex += (hexstr[i] - 0x30) * uint32_pow(16, (hexstr.length() - 1 - i));
+                else if (hexstr[i] >= 'A' && hexstr[i] <= 'F')
+                        hex += (hexstr[i] - 55) * uint32_pow(16, (hexstr.length() - 1 - i));
+                else if (hexstr[i] >= 'a' && hexstr[i] <= 'f')
+                        hex += (hexstr[i] - 87) * uint32_pow(16, (hexstr.length() - 1 - i));
+                else
+                        return false;
+        }
+
+        *_hex = hex;
+        return true;
+}
+
+/* hexstr_to_rgb
+ * ----------
+ * Arguments:
+ *      hex - A rgb hex string (ex. #AABBCC) 
+ *      rgb - RgbColor return pointer 
+ * Returns:
+ *      True - hex string has successfully been parsed to RgbColor object
+ *      False - Invalid hex string
+ * Description:
+ *      Parses a RGB hex string (frequently known as html color codes)
+ *      to a NeoPixel RgbColor object. If an invalid hex code is provided,
+ *      false is returned.
+ */
+
+bool hexstr_to_rgb(String hex, RgbColor *rgb)
+{
+        uint32_t rgb_hex;
+        bool valid;
+
+        if (hex[0] != '#')
+                return false;
+
+        valid = hexstr_to_uint32(hex.substring(1, RGB_HEX_STR_LEN), &rgb_hex);
+        
+        if (valid)
+                *rgb = HtmlColor(rgb_hex);
+        
+        return valid;
+}
+
+/* hexstr_to_rgbm
+ * ----------
+ * Arguments:
+ *      hex - A rgbm hex string (ex. #AABBCCDD) 
+ *      rgbn - rgbm return pointer 
+ * Returns:
+ *      True - hex string has successfully been parsed to rgbm object
+ *      False - Invalid hex string
+ * Description:
+ *      Parses a RGBM hex string to a rgbm object. If an invalid hex
+ *      code is provided,, false is returned.
+ */
+bool hexstr_to_rgbm(String hex, rgbm *rgbm)
+{
+        RgbColor rgb;
+        uint32_t m;
+
+        String rgb_hex;
+        String m_hex;
+
+        if (hex[0] != '#')
+                return false;
+
+        rgb_hex = hex.substring(0, RGB_HEX_STR_LEN);
+
+        if (!hexstr_to_rgb(rgb_hex, &rgb))
+                return false;
+        
+        rgbm->rgb = rgb;
+        
+        m_hex = hex.substring(RGB_HEX_STR_LEN, RGBM_HEX_STR_LEN);
+        
+        if (!hexstr_to_uint32(m_hex, &m))
+                return false;
+
+        rgbm->M = m;
+        return true;
+}
+
 /*
  * serialEvent
  * -----------
@@ -283,71 +376,69 @@ bool programmed = false;
 
 void serialEvent()
 {
+        static String cmdbuf = "";
         while(Serial.available()) {
                 char c = (char)Serial.read();
 
-                if (c == 'g') {
-                        String rgb_hex[4] { String(rgbstrp.GetPixelColor(0).R, HEX), String(rgbstrp.GetPixelColor(0).G, HEX), String(rgbstrp.GetPixelColor(0).B, HEX), String(mainstrp_bright, HEX)};
-
-                        for (uint8_t i = 0; i < 4; i++) {
-                                if (rgb_hex[i].length() == 1)
-                                        rgb_hex[i] = "0" + rgb_hex[i];
-                        }
-
-                        Serial.println("Current Color: #" + rgb_hex[0] + rgb_hex[1] + rgb_hex[2] + rgb_hex[3]);
-                        Serial.println("R: " + String(rgbstrp.GetPixelColor(0).R));
-                        Serial.println("G: " + String(rgbstrp.GetPixelColor(0).G));
-                        Serial.println("B: " + String(rgbstrp.GetPixelColor(0).B));
-                        Serial.println("M: " + String(mainstrp_bright));
-                        cmdbuf = "";
-                } else if (c == '#') {
-                        cmdbuf = "#";
-                } else if (c == '\a') {
-                        RgbColor prev_color = rgbstrp.GetPixelColor(0);
-                        authors_credit(&rgbstrp);
-                        rgbstrp.ClearTo(prev_color);
-                        rgbstrp.Show();
-                        cmdbuf = "";
-                } else if (c == '\n') {
-                        uint32_t rgb_hex;
-                        uint32_t m_hex;
-
-                        String rgb;
-                        String m;
-                        
-                        if (cmdbuf[0] != '#')
-                                goto INVALID_HEX;
-
-                        rgb = cmdbuf.substring(1, 7);
-
-                        if (!hexstr_to_uint32(&rgb_hex, rgb))
-                                goto INVALID_HEX;
-                        
-                        if (cmdbuf.length() == 9) {
-                                m = cmdbuf.substring(7, 9);
+                switch (c) {
+                        case 'g': {
+                                rgbm rgbm = {
+                                        rgbstrp.GetPixelColor(0), 
+                                        mainstrp_bright
+                                };
                                 
-                                if (!hexstr_to_uint32(&m_hex, m))
-                                        goto INVALID_HEX;
-                                
-                                mainstrp_bright = m_hex;
-                                analogWrite(MAIN_STRIP, m_hex);
+                                print_rgbm(rgbm);
+                                cmdbuf = "";
+                                break;
                         }
-                        
-                        rgbstrp.ClearTo(HtmlColor(rgb_hex));
-                        rgbstrp.Show();
+                        case '\a': {
+                                RgbColor prev_color = rgbstrp.GetPixelColor(0);
+                                authors_credit(&rgbstrp);
+                                rgbstrp.ClearTo(prev_color);
+                                rgbstrp.Show();
+                                cmdbuf = "";
+                                break;
+                        }
+                        case '\n': {
+                                bool valid = false;
 
-                        // Read average of pots for potentiometer movement detection 
-                        avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
-                        programmed = true;
+                                if (cmdbuf.length() == RGB_HEX_STR_LEN) {
+                                        RgbColor rgb;
+                                        valid = hexstr_to_rgb(cmdbuf, &rgb);
 
-                        cmdbuf = "";
-                        return;
+                                        if (valid) {
+                                                rgbstrp.ClearTo(rgb);
+                                                rgbstrp.Show();
+                                        }
+                                                
+                                } else if (cmdbuf.length() == RGBM_HEX_STR_LEN) {
+                                        rgbm rgbm;
 
-                        INVALID_HEX:
-                        Serial.println("Invalid hex value!");
-                        cmdbuf = "";
-                } else {
-                        cmdbuf += c;
+                                        valid = hexstr_to_rgbm(cmdbuf, &rgbm);
+  
+                                        if (valid) {
+                                                rgbstrp.ClearTo(rgbm.rgb);
+                                                rgbstrp.Show();
+                                                mainstrp_bright = rgbm.M;
+                                                analogWrite(MAIN_STRIP, mainstrp_bright);
+                                        }
+                                }
+                                
+                                if (valid) {
+                                        // Read average of pots for potentiometer movement detection 
+                                        avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
+                                        programmed = true;
+                                } else {
+                                        Serial.println("Invalid hex value!");
+                                }
+
+                                cmdbuf = "";
+                                return;
+                        }
+                        default: {
+                                cmdbuf += c;
+                                break;
+                        }
                 }
         }
 }
@@ -376,8 +467,7 @@ void change_patch(bool up)
         else
                 invalid = true;
   
-        if (!invalid)
-        {
+        if (!invalid) {
                 rgbstrp.ClearTo(patches[current_patch].rgb);
                 rgbstrp.Show();
                 mainstrp_bright = patches[current_patch].M;
@@ -516,7 +606,7 @@ void loop()
                 programmed = false;
         }
 
-        switch(patch_encoder.action()) {
+        switch (patch_encoder.action()) {
                 case pressed:
                         save_patch();
                         break;
@@ -525,6 +615,8 @@ void loop()
                         break;
                 case right:
                         change_patch(true);
+                        break;
+                default:
                         break;
         }
 
