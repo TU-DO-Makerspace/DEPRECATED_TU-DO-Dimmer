@@ -413,7 +413,6 @@ void serialEvent()
                                                 
                                 } else if (cmdbuf.length() == RGBM_HEX_STR_LEN) {
                                         rgbm rgbm;
-
                                         valid = hexstr_to_rgbm(cmdbuf, &rgbm);
   
                                         if (valid) {
@@ -433,7 +432,7 @@ void serialEvent()
                                 }
 
                                 cmdbuf = "";
-                                return;
+                                break;
                         }
                         default: {
                                 cmdbuf += c;
