@@ -190,8 +190,10 @@ inline bool rgbm_pot_mov_det(rgbm rgbmpots, rgbm avg, uint8_t max_dev)
         return (
                 abs(rgbmpots.rgb.R - avg.rgb.R) > max_dev ||
                 abs(rgbmpots.rgb.G - avg.rgb.G) > max_dev ||
-                abs(rgbmpots.rgb.B - avg.rgb.B) > max_dev ||
-                abs(rgbmpots.M - avg.M) > max_dev
+                abs(rgbmpots.rgb.B - avg.rgb.B) > max_dev
+#ifndef NO_MAIN_STRIP
+                || abs(rgbmpots.M - avg.M) > max_dev
+#endif
         );
 }
 
@@ -538,7 +540,11 @@ void save_patch()
 
 void setup()
 {
+#ifdef NO_MAIN_STRIP
+        pinMode(M_POT, INPUT_PULLUP);
+#else
         pinMode(M_POT, INPUT);
+#endif
         pinMode(R_POT, INPUT);
         pinMode(G_POT, INPUT);
         pinMode(B_POT, INPUT);

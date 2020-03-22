@@ -7,7 +7,7 @@ A custom DIY RGB dimmer for the TU-DO cafe.
 - [Building](#building)
   - [Components](#components)
   - [Perfboard layout](#perfboard-layout)
-  - [Compiling and flashing the firmware](#compiling-and-flashing-the-firmware)
+  - [Configuring, Compiling and flashing the firmware](#configuring-compiling-and-flashing-the-firmware)
 - [Usage](#usage)
   - [General usage](#general-usage)
   - [Patch bank](#patch-bank)
@@ -30,6 +30,8 @@ The TU-DO dimmer can control all three color channels of an RGB LED strip as wel
 |Component|Quantity|Description|
 |---------|--------|-----------|
 |Arduino Nano|1|The dimmer firmware runs on an Arduino Nano|
+|WS2812 Led Strip|1|The WS2812 is the RGB LED strip our choice. The number of "pixels" on the strip must be specified in the [config.h](src/config.h) file. Support for non-addressable RGB strips is planned to be added.|
+|Main LED Strip|1|The main strip can be any desired LED strip. If no main strip is used, uncomment the `NO_MAIN_STRIP` define directive.|
 |Perfboard (At least 31 x 25)|1|Provided the simplicity of this porject, designing a PCB is not planned. A perfboard layout for the dimmer is provided below|
 |IRF 630 N-Channel Mosfet|1|The IRF630 is used to drive the main light. Any other N-type MOSFET with the same lead assignments as the IRF 630 can be used in place|
 |10k linear potentiometer|4|The potentiometers are used to adjust the lights. 10k pots are recommended, but all linear pots in the 1k to 100k range should work|
@@ -38,7 +40,7 @@ The TU-DO dimmer can control all three color channels of an RGB LED strip as wel
 |Single row 15 pins 2.54mm female header|2|Two single row 15 pins female headers may be used instead of soldering the Arduino nano directly to the board|
 |Single row 5 pins 2.54mm female header|2|Two singlerow 5 pins female headers may be used instead of soldering the 7-segment display directly to the board|
 
-In total the components should be available for less than 20EUR.
+In total the components should be available for less than 25EUR.
 
 All provided components above are based on the perfboard layout below. The project has been written for the Arduino Nano, but will work with little to no change on the Arduino UNO and should be easily portable to other platforms by doing some slight modifications to the firmware. The configuration header in [src/config.h](src/config.h) stores firmware parameters, including pin mappings
 
@@ -59,16 +61,18 @@ Bottom wires only (top view)
 Bottom wires only (bottom view)
 ![](Wires-Only-Bottom-Layer-Bottom.png)
 
-### Compiling and flashing the firmware
+### Configuring, Compiling and flashing the firmware
 
 The following Arduino Libraries are required for the firmware:
 
 - [NeoPixelBus](https://github.com/adafruit/Adafruit_NeoPixel)
 - [Paul Stoffregen's encoder library](https://github.com/PaulStoffregen/Encoder)
 
-The firmware has been written using the [Platformio IDE](https://platformio.org/platformio-ide) and can be easily imported from the Platformio home menu. Once the project has been imported and all libraries have been downloaded, simply connect to the Arduino and click the upload button.
+The firmware has been written using the [Platformio IDE](https://platformio.org/platformio-ide) and can be easily imported from the Platformio home menu.
 
-Alternatively, the source code can be imported into the Arduino IDE. In order to import the project into the Arduino IDE, rename the `src/` directory to `main/` and rename `main.cpp` to `main.ino`. In the Arduino IDE go to `File > Open` and import the `main.ino` file. Finally, select the correct board and upload the sketch.
+Alternatively, the source code can be imported into the Arduino IDE. In order to import the project into the Arduino IDE, rename the `src/` directory to `main/` and rename `main.cpp` to `main.ino`. In the Arduino IDE go to `File > Open` and import the `main.ino` file and set the Arduino Nano as the target device.
+
+Before compiling and uploading the firmware, ensure the the firmware parameters in the [config.h](src/config.h) file are configured to your hardware setup (ex. number of LEDs/Pixels on the RGB strip).
 
 ## Usage
 

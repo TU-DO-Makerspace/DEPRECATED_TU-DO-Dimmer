@@ -24,23 +24,23 @@
 #include "PatchIndicator.h"
 
 ///////////////////////////
-// Pins
+// Hardware Parameters
 ///////////////////////////
 
 // Pots
-#define R_POT A5
-#define G_POT A4
-#define B_POT A3
-#define M_POT A2 // Main light
+#define R_POT A4
+#define G_POT A3
+#define B_POT A2
+#define M_POT A5 // Main light
 
 // Rotary encoder
 #define ROTARY_ENC_DT  2 // INT 0
 #define ROTARY_ENC_CLK 3 // INT 1
-#define ROTARY_ENC_SW  4
+#define ROTARY_ENC_SW  A0
 
 // LED Strips
 #define MAIN_STRIP     5
-#define RGB_STRIP      6
+#define RGB_STRIP      A1
 #define RGB_STRIP_LEDS 30 // Number of LEDs/Pixels on the RGB strip
 
 // 7-Segment Patch Indicator
@@ -59,8 +59,12 @@
 // Firmware parameters
 ///////////////////////////
 
+// Lights
+// #define NO_MAIN_STRIP // No main LED strip present,
+                      // defining this will prevent noise from toggling potentiometer movement detection
+
 // Rotary Encoder
-#define ROTARY_ENC_DEBOUCE_TIME 50
+#define ROTARY_ENC_DEBOUCE_TIME 100
 
 // Potentiometer movement detection
 #define AVG_SAMPLES     100
