@@ -36,7 +36,7 @@ The TU-DO dimmer can control all three color channels of an RGB LED strip as wel
 |KY-040 Rotary Encoder|1|The rotary encoder is used to switch between- and save patches|
 |14,2mm Common Anode 7-Segment display|1|The 7-segment display displays the current patch. Using a common cathode display is possible, but will require `SEV_SEG_COMMON_MODE` to be set to `COMMON_CATHODE` in the [config.h](src/config.h) file.|
 |Single row 15 pins 2.54mm female header|2|Two single row 15 pins female headers may be used instead of soldering the Arduino nano directly to the board|
-|Single row 5 pins 2.54mm female header|2|Two singlerow 5 pins female heaeders may be used instead of soldering the 7-segment display directly to the board|
+|Single row 5 pins 2.54mm female header|2|Two singlerow 5 pins female headers may be used instead of soldering the 7-segment display directly to the board|
 
 In total the components should be available for less than 20EUR.
 
