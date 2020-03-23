@@ -61,7 +61,7 @@
 
 // Lights
 // #define NO_MAIN_STRIP // No main LED strip present,
-                      // defining this will prevent noise from toggling potentiometer movement detection
+                         // defining this will prevent noise from toggling potentiometer movement detection
 
 // Rotary Encoder
 #define ROTARY_ENC_DEBOUCE_TIME 100
@@ -69,6 +69,7 @@
 // Potentiometer movement detection
 #define AVG_SAMPLES     100
 #define MAX_POT_MOV_DEV 6
+// #define POTS_INVERTED // Inverts the potentiometer readings in case of wiring screw ups...
 
 // 7-Segment Patch Indicator
 #define NUM_SAVE_BLINKS    3

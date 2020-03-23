@@ -115,7 +115,12 @@ inline uint8_t avg_pot_read(uint8_t pin, uint16_t samples)
         uint64_t avg = 0;
 
         for (uint16_t i = 0; i < samples; i++)
+
+#ifdef POTS_INVERTED
+                avg += ~analogRead(pin);
+#else
                 avg += analogRead(pin);
+#endif
 
         return adc_to_rgb(round(avg/samples));
 }
@@ -136,12 +141,19 @@ inline uint8_t avg_pot_read(uint8_t pin, uint16_t samples)
 inline rgbm rgbm_pots_read(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t pot_m)
 {
         rgbm ret;
-        
+
+#ifdef POTS_INVERTED
+        ret.rgb.R = adc_to_rgb(~analogRead(R_POT));
+        ret.rgb.G = adc_to_rgb(~analogRead(G_POT));
+        ret.rgb.B = adc_to_rgb(~analogRead(B_POT));
+        ret.M = adc_to_rgb(~analogRead(M_POT));
+#else
         ret.rgb.R = adc_to_rgb(analogRead(R_POT));
         ret.rgb.G = adc_to_rgb(analogRead(G_POT));
         ret.rgb.B = adc_to_rgb(analogRead(B_POT));
         ret.M = adc_to_rgb(analogRead(M_POT));
-        
+#endif
+
         return ret;
 }
 
