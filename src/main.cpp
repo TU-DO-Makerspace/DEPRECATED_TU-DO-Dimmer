@@ -34,6 +34,8 @@
 #error Sorry, only AVR boards are currently supported
 #endif
 
+#define ANALOG_READ_MAX 1023
+
 #define RGB_HEX_STR_LEN  7 // #AABBCC
 #define RGBM_HEX_STR_LEN 9 // #AABBCCDD
 
@@ -117,7 +119,7 @@ inline uint8_t avg_pot_read(uint8_t pin, uint16_t samples)
         for (uint16_t i = 0; i < samples; i++)
 
 #ifdef POTS_INVERTED
-                avg += ~analogRead(pin);
+                avg += ANALOG_READ_MAX - analogRead(pin);
 #else
                 avg += analogRead(pin);
 #endif
@@ -143,10 +145,10 @@ inline rgbm rgbm_pots_read(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t 
         rgbm ret;
 
 #ifdef POTS_INVERTED
-        ret.rgb.R = adc_to_rgb(~analogRead(R_POT));
-        ret.rgb.G = adc_to_rgb(~analogRead(G_POT));
-        ret.rgb.B = adc_to_rgb(~analogRead(B_POT));
-        ret.M = adc_to_rgb(~analogRead(M_POT));
+        ret.rgb.R = adc_to_rgb(ANALOG_READ_MAX - analogRead(R_POT));
+        ret.rgb.G = adc_to_rgb(ANALOG_READ_MAX - analogRead(G_POT));
+        ret.rgb.B = adc_to_rgb(ANALOG_READ_MAX - analogRead(B_POT));
+        ret.M = adc_to_rgb(ANALOG_READ_MAX - analogRead(M_POT));
 #else
         ret.rgb.R = adc_to_rgb(analogRead(R_POT));
         ret.rgb.G = adc_to_rgb(analogRead(G_POT));
