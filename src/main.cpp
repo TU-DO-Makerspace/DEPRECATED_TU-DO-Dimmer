@@ -156,6 +156,26 @@ inline rgbm rgbm_pots_read(uint8_t pot_r, uint8_t pot_g, uint8_t pot_b, uint8_t 
         ret.M = adc_to_rgb(analogRead(M_POT));
 #endif
 
+#if R_POT_LOWER_BOUND > 0
+        if (ret.rgb.R <= R_POT_LOWER_BOUND)
+                ret.rgb.R = 0;
+#endif
+
+#if G_POT_LOWER_BOUND > 0
+        if (ret.rgb.G <= G_POT_LOWER_BOUND)
+                ret.rgb.G = 0;
+#endif
+
+#if B_POT_LOWER_BOUND > 0
+        if (ret.rgb.B <= B_POT_LOWER_BOUND)
+                ret.rgb.B = 0;
+#endif
+
+#if M_POT_LOWER_BOUND > 0
+        if (ret.M <= M_POT_LOWER_BOUND)
+                ret.M = 0;
+#endif
+
         return ret;
 }
 
@@ -443,7 +463,7 @@ void serialEvent()
                                 
                                 if (valid) {
                                         // Read average of pots for potentiometer movement detection 
-                                        avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
+                                        avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, POT_MOV_DET_AVG_SAMPLES);
                                         programmed = true;
                                 } else {
                                         Serial.println("Invalid hex value!");
@@ -491,7 +511,7 @@ void change_patch(bool up)
                 mainstrp_bright = patches[current_patch].M;
                 analogWrite(MAIN_STRIP, mainstrp_bright);
 #endif
-                avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
+                avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, POT_MOV_DET_AVG_SAMPLES);
                 programmed = true;
                 patch_indicator.set(current_patch);
         }
@@ -594,7 +614,7 @@ void setup()
         patch_indicator.set(0);
         patch_indicator.show(PATCH_DISPLAY_TIME);
 
-        avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
+        avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, POT_MOV_DET_AVG_SAMPLES);
         programmed = true;
 }
 
@@ -623,7 +643,7 @@ void loop()
 {
         rgbmpots = rgbm_pots_read(R_POT, G_POT, B_POT, M_POT);
 
-        if (!programmed || rgbm_pot_mov_det(rgbmpots, avg, MAX_POT_MOV_DEV)) {
+        if (!programmed || rgbm_pot_mov_det(rgbmpots, avg, POT_MOV_DET_MAX_DEV)) {
                 rgbstrp.ClearTo(rgbmpots.rgb); // Set RGB strip
                 rgbstrp.Show();
 #ifndef NO_MAIN_STRIP

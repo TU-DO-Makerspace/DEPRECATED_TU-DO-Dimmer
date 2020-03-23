@@ -27,23 +27,23 @@
 // Hardware Parameters
 ///////////////////////////
 
-// Pots
+/* Pots */
 #define R_POT A4
 #define G_POT A3
 #define B_POT A2
 #define M_POT A5 // Main light
 
-// Rotary encoder
+/* Rotary encoder */
 #define ROTARY_ENC_DT  2 // INT 0
 #define ROTARY_ENC_CLK 3 // INT 1
 #define ROTARY_ENC_SW  A0
 
-// LED Strips
+/* LED Strips */
 #define MAIN_STRIP     5
 #define RGB_STRIP      A1
 #define RGB_STRIP_LEDS 30 // Number of LEDs/Pixels on the RGB strip
 
-// 7-Segment Patch Indicator
+/* 7-Segment Patch Indicator */
 #define SEV_SEG_COMMON_MODE COMMON_ANODE
 #define SEV_SEG_A      11
 #define SEV_SEG_B      12
@@ -61,26 +61,35 @@
 
 // Lights
 #define NO_MAIN_STRIP // No main LED strip present,
-                         // defining this will prevent noise from toggling potentiometer movement detection
+                      // defining this will prevent noise from toggling potentiometer movement detection
 
-// Rotary Encoder
+/* Rotary Encoder */
 #define ROTARY_ENC_DEBOUCE_TIME 100
 
-// Potentiometer movement detection
-#define AVG_SAMPLES     100
-#define MAX_POT_MOV_DEV 6
+/* Potentiometers */
+#define POT_MOV_DET_AVG_SAMPLES 100
+#define POT_MOV_DET_MAX_DEV     6
 #define POTS_INVERTED // Inverts the potentiometer readings in case of wiring screw ups...
 
-// 7-Segment Patch Indicator
+// Lower bounds
+// When pot values are less and equal to the lower bound, 
+// the color channel is disabled. This serves to compensate
+// for flickering caused by potentiometer noise.
+#define R_POT_LOWER_BOUND 2
+#define G_POT_LOWER_BOUND 2
+#define B_POT_LOWER_BOUND 2
+#define M_POT_LOWER_BOUND 2
+
+/* 7-Segment Patch Indicator */
 #define NUM_SAVE_BLINKS    3
 #define BLINK_INTERVAL_ON  250  // ms
 #define BLINK_INTERVAL_OFF 250  // ms
 #define PATCH_DISPLAY_TIME 5000 // Time (ms) for 7-seg to remain on after changing patches
 
-// Patches
+/* Patches */
 #define EEPROM_PATCH_ADDR  0x0 // Start of patches array in EEPROM
 
-// Boot message
+/* Boot message */
 #define BOOT_MSG_AUTHORS "Patrick Pedersen <ctx.xda@gmail.com>"
 #define BOOT_MSG_LICENSE "GPLv3"
 #define BOOT_MSG_SRC "https://github.com/TU-DO-Makerspace/TU-DO-Disco"
@@ -102,7 +111,7 @@
 "\n"\
 "Makerspace | Do it yourself!"
 
-// Authors Credit
+/* Authors Credit */
 #define MORSE_SHORT 200
 #define MORSE_LONG 3 * MORSE_SHORT
 #define MORSE_BTWN MORSE_SHORT
