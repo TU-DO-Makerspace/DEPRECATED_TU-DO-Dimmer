@@ -21,6 +21,6 @@
 
 #pragma once
 
-#include <NeoPixelBus.h>
+#include <LEDStrip.h>
 
-void authors_credit(NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod> *rgbstrp);
+void authors_credit(RGBStrip *rgbstrp);

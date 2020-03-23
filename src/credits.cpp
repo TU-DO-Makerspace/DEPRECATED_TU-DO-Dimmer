@@ -35,10 +35,9 @@
  *      has been called.
  */
 
-void flash(NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod> *rgbstrp, RgbColor color, unsigned long duration)
+void flash(RGBStrip *rgbstrp, RgbColor color, unsigned long duration)
 {
-        rgbstrp->ClearTo(color);
-        rgbstrp->Show();
+        rgbstrp->set(color);
         delay(duration);
 }
 
@@ -51,7 +50,7 @@ void flash(NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod> *rgbstrp, RgbColor colo
  *      Author credits
  */
 
-void authors_credit(NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod> *rgbstrp)
+void authors_credit(RGBStrip *rgbstrp)
 {
         RgbColor off(0, 0, 0);
         RgbColor red(255, 0, 0);

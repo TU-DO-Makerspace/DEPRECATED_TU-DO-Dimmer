@@ -26,6 +26,7 @@
 #include <NeoPixelBus.h> // https://github.com/Makuna/NeoPixelBus
 
 #include "config.h"
+#include "LEDStrip.h"
 #include "credits.h"
 #include "PatchIndicator.h"
 #include "PatchEncoder.h"
@@ -238,7 +239,11 @@ inline bool rgbm_pot_mov_det(rgbm rgbmpots, rgbm avg, uint8_t max_dev)
 // LED Strips
 uint8_t mainstrp_bright; // Current brightness of main light strip
 
-NeoPixelBus <NeoGrbFeature, Neo800KbpsMethod> rgbstrp(RGB_STRIP_LEDS , RGB_STRIP); // Driver for RGB light strip (See https://github.com/Makuna/NeoPixelBus/wiki)
+#if RGB_STRIP_TYPE == ADDRESSABLE
+RGBStrip rgbstrp(RGB_STRIP_LEDS, RGB_STRIP);
+#else
+RGBStrip rgbstrp(RGB_STRIP_R, RGB_STRIP_G, RGB_STRIP_B);
+#endif
 
 rgbm rgbmpots; // Stores current potentiometer values
 rgbm avg; // Stores average potentiometer values
@@ -419,7 +424,7 @@ void serialEvent()
                 switch (c) {
                         case 'g': {
                                 rgbm rgbm = {
-                                        rgbstrp.GetPixelColor(0), 
+                                        rgbstrp.get(), 
                                         mainstrp_bright
                                 };
                                 
@@ -428,10 +433,9 @@ void serialEvent()
                                 break;
                         }
                         case '\a': {
-                                RgbColor prev_color = rgbstrp.GetPixelColor(0);
+                                RgbColor prev_color = rgbstrp.get();
                                 authors_credit(&rgbstrp);
-                                rgbstrp.ClearTo(prev_color);
-                                rgbstrp.Show();
+                                rgbstrp.set(prev_color);
                                 cmdbuf = "";
                                 break;
                         }
@@ -443,8 +447,7 @@ void serialEvent()
                                         valid = hexstr_to_rgb(cmdbuf, &rgb);
 
                                         if (valid) {
-                                                rgbstrp.ClearTo(rgb);
-                                                rgbstrp.Show();
+                                                rgbstrp.set(rgb);
                                         }
                                                 
                                 } else if (cmdbuf.length() == RGBM_HEX_STR_LEN) {
@@ -452,8 +455,7 @@ void serialEvent()
                                         valid = hexstr_to_rgbm(cmdbuf, &rgbm);
   
                                         if (valid) {
-                                                rgbstrp.ClearTo(rgbm.rgb);
-                                                rgbstrp.Show();
+                                                rgbstrp.set(rgbm.rgb);
 #ifndef NO_MAIN_STRIP
                                                 mainstrp_bright = rgbm.M;
                                                 analogWrite(MAIN_STRIP, mainstrp_bright);
@@ -505,8 +507,7 @@ void change_patch(bool up)
                 invalid = true;
   
         if (!invalid) {
-                rgbstrp.ClearTo(patches[current_patch].rgb);
-                rgbstrp.Show();
+                rgbstrp.set(patches[current_patch].rgb);
 #ifndef NO_MAIN_STRIP
                 mainstrp_bright = patches[current_patch].M;
                 analogWrite(MAIN_STRIP, mainstrp_bright);
@@ -552,7 +553,7 @@ void patch_dwn()
 
 void save_patch()
 {
-        patches[current_patch].rgb = rgbstrp.GetPixelColor(0);
+        patches[current_patch].rgb = rgbstrp.get();
         patches[current_patch].M = mainstrp_bright;
         EEPROM.put(EEPROM_PATCH_ADDR + (sizeof(rgbm) * current_patch), patches[current_patch]);
         patch_indicator.blink(NUM_SAVE_BLINKS, BLINK_INTERVAL_ON, BLINK_INTERVAL_OFF);
@@ -595,7 +596,6 @@ void setup()
         Serial.println("License: " + String(BOOT_MSG_LICENSE));
         Serial.println("Build date: " + String(__DATE__));
         Serial.println("Documentation: " + String(BOOT_MSG_SRC));
-        rgbstrp.Begin();
 
         // Load patches from EEPROM into ram
         EEPROM.get(EEPROM_PATCH_ADDR, patches);
@@ -603,8 +603,7 @@ void setup()
         // Load 0th patch on boot
         current_patch = 0;
 
-        rgbstrp.ClearTo(patches[current_patch].rgb);
-        rgbstrp.Show();
+        rgbstrp.set(patches[current_patch].rgb);
 #ifndef NO_MAIN_STRIP
         mainstrp_bright = patches[current_patch].M;
         analogWrite(MAIN_STRIP, mainstrp_bright); // Sets the brightness of the mainstrip
@@ -644,8 +643,7 @@ void loop()
         rgbmpots = rgbm_pots_read(R_POT, G_POT, B_POT, M_POT);
 
         if (!programmed || rgbm_pot_mov_det(rgbmpots, avg, POT_MOV_DET_MAX_DEV)) {
-                rgbstrp.ClearTo(rgbmpots.rgb); // Set RGB strip
-                rgbstrp.Show();
+                rgbstrp.set(rgbmpots.rgb); // Set RGB strip
 #ifndef NO_MAIN_STRIP
                 mainstrp_bright = rgbmpots.M;
                 analogWrite(MAIN_STRIP, mainstrp_bright); // Set main light strip

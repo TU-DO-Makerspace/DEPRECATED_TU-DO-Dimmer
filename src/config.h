@@ -40,8 +40,17 @@
 
 /* LED Strips */
 #define MAIN_STRIP     5
+
+// Addressable Strips (NeoPixel/WS2812)
+#define RGB_STRIP_TYPE ADDRESSABLE
 #define RGB_STRIP      A1
 #define RGB_STRIP_LEDS 30 // Number of LEDs/Pixels on the RGB strip
+
+// Non-Addressable Strips (Replace XX with free PWM pins)
+// #define RGB_STRIP_TYPE NON_ADDRESSABLE
+// #define RGB_STRIP_A    XX
+// #define RGB_STRIP_G    XX
+// #define RGB_STRIP_B    XX
 
 /* 7-Segment Patch Indicator */
 #define SEV_SEG_COMMON_MODE COMMON_ANODE
