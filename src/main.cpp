@@ -432,8 +432,10 @@ void serialEvent()
                                         if (valid) {
                                                 rgbstrp.ClearTo(rgbm.rgb);
                                                 rgbstrp.Show();
+#ifndef NO_MAIN_STRIP
                                                 mainstrp_bright = rgbm.M;
                                                 analogWrite(MAIN_STRIP, mainstrp_bright);
+#endif
                                         }
                                 }
                                 
@@ -483,8 +485,10 @@ void change_patch(bool up)
         if (!invalid) {
                 rgbstrp.ClearTo(patches[current_patch].rgb);
                 rgbstrp.Show();
+#ifndef NO_MAIN_STRIP
                 mainstrp_bright = patches[current_patch].M;
                 analogWrite(MAIN_STRIP, mainstrp_bright);
+#endif
                 avg = avg_rgbm_pot_read(R_POT, G_POT, B_POT, M_POT, AVG_SAMPLES);
                 programmed = true;
                 patch_indicator.set(current_patch);
@@ -579,8 +583,10 @@ void setup()
 
         rgbstrp.ClearTo(patches[current_patch].rgb);
         rgbstrp.Show();
+#ifndef NO_MAIN_STRIP
         mainstrp_bright = patches[current_patch].M;
         analogWrite(MAIN_STRIP, mainstrp_bright); // Sets the brightness of the mainstrip
+#endif
 
         // 7-Segment Initialization
         patch_indicator.set(0);
@@ -618,8 +624,10 @@ void loop()
         if (!programmed || rgbm_pot_mov_det(rgbmpots, avg, MAX_POT_MOV_DEV)) {
                 rgbstrp.ClearTo(rgbmpots.rgb); // Set RGB strip
                 rgbstrp.Show();
+#ifndef NO_MAIN_STRIP
                 mainstrp_bright = rgbmpots.M;
                 analogWrite(MAIN_STRIP, mainstrp_bright); // Set main light strip
+#endif
                 programmed = false;
         }
 
