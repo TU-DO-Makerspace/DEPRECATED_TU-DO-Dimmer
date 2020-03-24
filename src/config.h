@@ -39,6 +39,8 @@
 #define ROTARY_ENC_SW  A0
 
 /* LED Strips */
+#define NO_MAIN_STRIP // No main LED strip present,
+                      // defining this will prevent noise from toggling potentiometer movement detection
 #define MAIN_STRIP     5
 
 // Addressable Strips (NeoPixel/WS2812)
@@ -67,10 +69,6 @@
 ///////////////////////////
 // Firmware parameters
 ///////////////////////////
-
-// Lights
-#define NO_MAIN_STRIP // No main LED strip present,
-                      // defining this will prevent noise from toggling potentiometer movement detection
 
 /* Rotary Encoder */
 #define ROTARY_ENC_DEBOUCE_TIME 250

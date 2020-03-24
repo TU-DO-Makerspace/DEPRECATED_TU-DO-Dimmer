@@ -1,6 +1,8 @@
 <!-- omit in toc -->
 # TU-DO Disco
 
+![Showcase](CartboardShowcase.jpg)
+
 A custom DIY RGB dimmer for the TU-DO cafe.
 
 - [Features](#features)
@@ -21,7 +23,7 @@ A custom DIY RGB dimmer for the TU-DO cafe.
 
 ## Features
 
-The TU-DO dimmer can control all three color channels of an RGB LED strip as well as the brightness of a main 12V white LED strip using a set of 4 rotary potentiometers. In addition to satisfying the basic features a lights dimmer, the device also offers a 10-slot patch bank to store light any desired "patches"/configuration. The stored patches may then be loaded. Finally, one last touch that has been added is the option to program the LED strips do a desired HTML color code via USB serial communication.
+The TU-DO dimmer can control all three color channels of an RGB LED strip as well as optionally the brightness of a main 12V white LED strip using a set of 4 rotary potentiometers. In addition to satisfying the basic features a lights dimmer, the device also offers a 10-slot patch bank to store light any desired "patches"/configuration. The stored patches may then be loaded. Finally, one last touch that has been added is the option to program the LED strips do a desired HTML color code via USB serial communication.
 
 ## Building
 
@@ -30,7 +32,7 @@ The TU-DO dimmer can control all three color channels of an RGB LED strip as wel
 |Component|Quantity|Description|
 |---------|--------|-----------|
 |Arduino Nano|1|The dimmer firmware runs on an Arduino Nano|
-|WS2812 Led Strip|1|The WS2812 is the RGB LED strip our choice. The number of "pixels" on the strip must be specified in the [config.h](src/config.h) file. Support for non-addressable RGB strips is planned to be added.|
+|WS2812 Led Strip|1|The WS2812 is the RGB LED strip our choice. The number of "pixels" on the strip must be specified in the [config.h](src/config.h) file. Documentation for non-addressable RGB strips is planned to be added.|
 |Main LED Strip|1|The main strip can be any desired LED strip. If no main strip is used, uncomment the `NO_MAIN_STRIP` define directive.|
 |Perfboard (At least 31 x 25)|1|Provided the simplicity of this porject, designing a PCB is not planned. A perfboard layout for the dimmer is provided below|
 |IRF 630 N-Channel Mosfet|1|The IRF630 is used to drive the main light. Any other N-type MOSFET with the same lead assignments as the IRF 630 can be used in place|
