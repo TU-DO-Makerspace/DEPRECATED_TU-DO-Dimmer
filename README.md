@@ -1,5 +1,5 @@
 <!-- omit in toc -->
-# TU-DO Disco
+# TU-DO Dimmer
 
 ![Showcase](CartboardShowcase.jpg)
 
