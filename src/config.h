@@ -73,7 +73,7 @@
                       // defining this will prevent noise from toggling potentiometer movement detection
 
 /* Rotary Encoder */
-#define ROTARY_ENC_DEBOUCE_TIME 100
+#define ROTARY_ENC_DEBOUCE_TIME 250
 
 /* Potentiometers */
 #define POT_MOV_DET_AVG_SAMPLES 100
