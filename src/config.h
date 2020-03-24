@@ -39,6 +39,8 @@
 #define ROTARY_ENC_SW  A0
 
 /* LED Strips */
+// #define NO_MAIN_STRIP // No main LED strip present,
+                         // defining this will prevent noise from toggling potentiometer movement detection
 #define MAIN_STRIP     5
 
 // Addressable Strips (NeoPixel/WS2812)
@@ -68,26 +70,22 @@
 // Firmware parameters
 ///////////////////////////
 
-// Lights
-#define NO_MAIN_STRIP // No main LED strip present,
-                      // defining this will prevent noise from toggling potentiometer movement detection
-
 /* Rotary Encoder */
 #define ROTARY_ENC_DEBOUCE_TIME 250
 
 /* Potentiometers */
 #define POT_MOV_DET_AVG_SAMPLES 100
 #define POT_MOV_DET_MAX_DEV     6
-#define POTS_INVERTED // Inverts the potentiometer readings in case of wiring screw ups...
+// #define POTS_INVERTED // Inverts the potentiometer readings in case of wiring screw ups...
 
 // Lower bounds
 // When pot values are less and equal to the lower bound, 
 // the color channel is disabled. This serves to compensate
 // for flickering caused by potentiometer noise.
-#define R_POT_LOWER_BOUND 2
-#define G_POT_LOWER_BOUND 2
-#define B_POT_LOWER_BOUND 2
-#define M_POT_LOWER_BOUND 2
+#define R_POT_LOWER_BOUND 0
+#define G_POT_LOWER_BOUND 0
+#define B_POT_LOWER_BOUND 0
+#define M_POT_LOWER_BOUND 0
 
 /* 7-Segment Patch Indicator */
 #define NUM_SAVE_BLINKS    3
